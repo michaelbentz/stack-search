@@ -1,7 +1,7 @@
 package com.michaelbentz.stacksearch.app.di.module
 
 import com.michaelbentz.stacksearch.BuildConfig
-import com.michaelbentz.stacksearch.data.remote.service.PlaceholderService
+import com.michaelbentz.stacksearch.data.remote.service.SearchService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,11 +16,16 @@ class NetworkModule {
 
     @Singleton
     @Provides
-    fun providePlaceholderService(): PlaceholderService {
+    fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.STACK_EXCHANGE_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(PlaceholderService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSearchService(retrofit: Retrofit): SearchService {
+        return retrofit.create(SearchService::class.java)
     }
 }
