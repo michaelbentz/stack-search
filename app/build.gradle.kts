@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -7,6 +8,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+}
+
+val buildProperties = gradle.rootProject.file("build.properties").inputStream().use { stream ->
+    Properties().apply { load(stream) }
 }
 
 android {
@@ -20,6 +25,8 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "STACK_EXCHANGE_BASE_URL", "\"${buildProperties["STACK_EXCHANGE_BASE_URL"]}\"")
     }
     buildTypes {
         release {
@@ -66,7 +73,6 @@ dependencies {
     // Retrofit2
     implementation(libs.retrofit2.retrofit)
     implementation(libs.retrofit2.converter.gson)
-    implementation(libs.retrofit2.converter.simplexml)
     implementation(libs.okhttp3.okhttp)
 
     testImplementation(libs.junit)

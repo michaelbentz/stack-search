@@ -10,7 +10,6 @@ hilt = "2.57"
 hiltNavigationCompose = "1.2.0"
 room = "2.7.2"
 retrofit = "3.0.0"
-retrofitSimpleXml = "3.0.0"
 okHttp3 = "5.1.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -37,7 +36,6 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 # Retrofit
 retrofit2-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit2-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
-retrofit2-converter-simplexml = { group = "com.squareup.retrofit2", name = "converter-simplexml", version.ref = "retrofitSimpleXml" }
 okhttp3-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okHttp3" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
