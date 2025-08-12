@@ -1,7 +1,7 @@
 package com.michaelbentz.stacksearch.app.di.module
 
 import com.michaelbentz.stacksearch.BuildConfig
-import com.michaelbentz.stacksearch.data.net.service.PlaceholderService
+import com.michaelbentz.stacksearch.data.remote.service.PlaceholderService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +13,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 @Module
 class NetworkModule {
+
     @Singleton
     @Provides
     fun providePlaceholderService(): PlaceholderService {
