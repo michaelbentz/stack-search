@@ -1,4 +1,4 @@
-package com.michaelbentz.stacksearch
+package com.michaelbentz.stacksearch.presentation.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,8 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.michaelbentz.stacksearch.ui.theme.StackSearchTheme
+import com.michaelbentz.stacksearch.presentation.theme.StackSearchTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

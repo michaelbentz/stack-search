@@ -1,4 +1,4 @@
-package com.michaelbentz.stacksearch.ui.theme
+package com.michaelbentz.stacksearch.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
