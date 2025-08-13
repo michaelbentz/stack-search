@@ -2,7 +2,7 @@ package com.michaelbentz.stacksearch.data.remote.model
 
 import com.google.gson.annotations.SerializedName
 
-data class SearchResponse(
+data class QuestionSearchResponse(
     @SerializedName("items") val items: List<Question>,
     @SerializedName("has_more") val hasMore: Boolean,
     @SerializedName("quota_max") val quotaMax: Int,
