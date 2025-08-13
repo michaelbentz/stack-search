@@ -26,7 +26,11 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "STACK_EXCHANGE_BASE_URL", "\"${buildProperties["STACK_EXCHANGE_BASE_URL"]}\"")
+        buildConfigField(
+            "String",
+            "STACK_EXCHANGE_BASE_URL",
+            "\"${buildProperties["STACK_EXCHANGE_BASE_URL"]}\""
+        )
     }
     buildTypes {
         release {
@@ -62,6 +66,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    // Coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
