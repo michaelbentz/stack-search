@@ -1,7 +1,7 @@
 package com.michaelbentz.stacksearch.app.di.module
 
 import com.michaelbentz.stacksearch.BuildConfig
-import com.michaelbentz.stacksearch.data.remote.service.SearchService
+import com.michaelbentz.stacksearch.data.remote.service.QuestionService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +25,7 @@ class NetworkModule {
 
     @Singleton
     @Provides
-    fun provideSearchService(retrofit: Retrofit): SearchService {
-        return retrofit.create(SearchService::class.java)
+    fun provideQuestionService(retrofit: Retrofit): QuestionService {
+        return retrofit.create(QuestionService::class.java)
     }
 }
