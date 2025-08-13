@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">StackSearch</string>
+
+    <string name="search_placeholder">Search…</string>
+    <string name="action_search">Search</string>
+
+    <string name="question_title">Q: %1$s</string>
+    <string name="question_asked_by">asked %1$s by %2$s</string>
+
+    <string name="label_answers">answers</string>
+    <string name="label_votes">votes</string>
+    <string name="label_views">views</string>
+
+    <string name="content_description_menu">Menu</string>
+    <string name="content_description_logo">Logo</string>
+    <string name="content_description_check">Accepted</string>
+    <string name="content_description_arrow">Open</string>
 </resources>
