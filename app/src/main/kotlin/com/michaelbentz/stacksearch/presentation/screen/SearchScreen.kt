@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.michaelbentz.stacksearch.R
 import com.michaelbentz.stacksearch.presentation.component.SvgImage
 import com.michaelbentz.stacksearch.presentation.model.QuestionItemUiData
@@ -52,6 +53,7 @@ import com.michaelbentz.stacksearch.presentation.viewmodel.SearchViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
+    navController: NavHostController,
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
@@ -131,7 +133,9 @@ fun SearchScreen(
                                     item = item,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable {}
+                                        .clickable {
+                                            navController.navigate(Screen.Detail.withArg(item.id))
+                                        }
                                         .padding(12.dp),
                                 )
                                 HorizontalDivider()

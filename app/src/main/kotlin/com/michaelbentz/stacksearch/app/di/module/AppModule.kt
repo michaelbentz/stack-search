@@ -1,6 +1,8 @@
 package com.michaelbentz.stacksearch.app.di.module
 
+import com.michaelbentz.stacksearch.data.repository.AnswerRepositoryImpl
 import com.michaelbentz.stacksearch.data.repository.QuestionRepositoryImpl
+import com.michaelbentz.stacksearch.domain.repository.AnswerRepository
 import com.michaelbentz.stacksearch.domain.repository.QuestionRepository
 import dagger.Binds
 import dagger.Module
@@ -15,4 +17,9 @@ abstract class AppModule {
     abstract fun bindSearchRepository(
         implementation: QuestionRepositoryImpl,
     ): QuestionRepository
+
+    @Binds
+    abstract fun bindAnswerRepository(
+        implementation: AnswerRepositoryImpl,
+    ): AnswerRepository
 }

@@ -24,7 +24,7 @@ class QuestionRepositoryImpl @Inject constructor(
             questionDao.replaceAll(response.toEntities())
             emit(Resource.Success(Unit))
         } catch (exception: Exception) {
-            emit(Resource.Error(ERROR_REFRESH_LATEST_QUESTIONS, exception))
+            emit(Resource.Error(ERROR_FETCH_LATEST_QUESTIONS, exception))
         }
     }
 
@@ -45,8 +45,14 @@ class QuestionRepositoryImpl @Inject constructor(
             .map { entities -> entities.map { it.toDomain() } }
     }
 
+    override fun getQuestionById(id: Long): Flow<Question?> {
+        return questionDao
+            .getById(id)
+            .map { entity -> entity?.toDomain() }
+    }
+
     companion object {
-        private const val ERROR_REFRESH_LATEST_QUESTIONS = "Failed to refresh latest questions"
+        private const val ERROR_FETCH_LATEST_QUESTIONS = "Failed to fetch latest questions"
         private const val ERROR_SEARCH_QUESTIONS = "Failed to load question search"
     }
 }

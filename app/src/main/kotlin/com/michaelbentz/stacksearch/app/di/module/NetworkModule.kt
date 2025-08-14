@@ -1,6 +1,7 @@
 package com.michaelbentz.stacksearch.app.di.module
 
 import com.michaelbentz.stacksearch.BuildConfig
+import com.michaelbentz.stacksearch.data.remote.service.AnswerService
 import com.michaelbentz.stacksearch.data.remote.service.QuestionService
 import dagger.Module
 import dagger.Provides
@@ -27,5 +28,11 @@ class NetworkModule {
     @Provides
     fun provideQuestionService(retrofit: Retrofit): QuestionService {
         return retrofit.create(QuestionService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAnswerService(retrofit: Retrofit): AnswerService {
+        return retrofit.create(AnswerService::class.java)
     }
 }

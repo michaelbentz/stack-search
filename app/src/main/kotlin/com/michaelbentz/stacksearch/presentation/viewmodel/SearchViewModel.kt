@@ -5,14 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.michaelbentz.stacksearch.domain.usecase.FetchLatestQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.SearchQuestionsUseCase
-import com.michaelbentz.stacksearch.presentation.mapper.toUiData
+import com.michaelbentz.stacksearch.presentation.mapper.toQuestionItemUiData
 import com.michaelbentz.stacksearch.presentation.model.SearchUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
 import com.michaelbentz.stacksearch.util.Resource
 import com.michaelbentz.stacksearch.util.UiDateFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    @param:UiDateFormatter private val dateFormatter: DateTimeFormatter,
+    @param:UiDateFormatter private val dateTimeFormatter: DateTimeFormatter,
     private val fetchLatestQuestionsUseCase: FetchLatestQuestionsUseCase,
     private val searchQuestionsUseCase: SearchQuestionsUseCase,
     getQuestionsUseCase: GetQuestionsUseCase,
@@ -40,7 +40,7 @@ class SearchViewModel @Inject constructor(
         getQuestionsUseCase(),
     ) { isRefreshing, refreshError, query, questions ->
         val questionItems = questions.map { question ->
-            question.toUiData(dateFormatter)
+            question.toQuestionItemUiData(dateTimeFormatter)
         }
         when {
             questionItems.isNotEmpty() -> SearchUiState.Data(
@@ -55,9 +55,9 @@ class SearchViewModel @Inject constructor(
             else -> SearchUiState.Loading
         }
     }.stateIn(
-        viewModelScope,
-        WhileSubscribed(STOP_TIMEOUT_MILLIS),
-        SearchUiState.Loading,
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+        initialValue = SearchUiState.Loading,
     )
 
     init {
