@@ -2,6 +2,7 @@ package com.michaelbentz.stacksearch.app.di.module
 
 import android.content.Context
 import com.michaelbentz.stacksearch.data.local.Database
+import com.michaelbentz.stacksearch.data.local.dao.AnswerDao
 import com.michaelbentz.stacksearch.data.local.dao.QuestionDao
 import dagger.Module
 import dagger.Provides
@@ -23,5 +24,10 @@ class DatabaseModule {
     @Provides
     fun provideQuestionDao(database: Database): QuestionDao {
         return database.questionDao()
+    }
+
+    @Provides
+    fun provideAnswerDao(database: Database): AnswerDao {
+        return database.answerDao()
     }
 }

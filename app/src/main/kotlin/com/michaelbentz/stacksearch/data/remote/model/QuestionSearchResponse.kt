@@ -3,14 +3,14 @@ package com.michaelbentz.stacksearch.data.remote.model
 import com.google.gson.annotations.SerializedName
 
 data class QuestionSearchResponse(
-    @SerializedName("items") val items: List<Question>,
+    @SerializedName("items") val items: List<QuestionSearchItem>,
 )
 
-data class Question(
+data class QuestionSearchItem(
     @SerializedName("question_id") val questionId: Long,
     @SerializedName("title") val title: String,
     @SerializedName("body") val body: String?,
-    @SerializedName("owner") val owner: Owner,
+    @SerializedName("owner") val questionOwner: QuestionOwner,
     @SerializedName("answer_count") val answerCount: Int,
     @SerializedName("score") val score: Int,
     @SerializedName("view_count") val viewCount: Int,
@@ -18,6 +18,6 @@ data class Question(
     @SerializedName("last_activity_date") val lastActivityEpochSec: Long,
 )
 
-data class Owner(
+data class QuestionOwner(
     @SerializedName("display_name") val displayName: String,
 )
