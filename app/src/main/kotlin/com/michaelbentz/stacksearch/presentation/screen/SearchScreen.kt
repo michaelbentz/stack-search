@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -37,9 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -214,26 +211,29 @@ private fun QuestionItemRow(
                 maxLines = 1,
                 text = stringResource(R.string.question_title, item.title),
             )
+            Spacer(Modifier.height(4.dp))
             Text(
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
+                maxLines = 3,
                 text = item.excerpt,
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 style = MaterialTheme.typography.labelMedium,
                 text = stringResource(R.string.question_asked_by, item.askedDate, item.owner),
             )
         }
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(16.dp))
         Column(
             modifier = Modifier
-                .width(94.dp),
+                .width(72.dp),
             horizontalAlignment = Alignment.Start,
         ) {
             LabeledValueItem(value = item.answers, label = stringResource(R.string.label_answers))
+            Spacer(Modifier.height(8.dp))
             LabeledValueItem(value = item.votes, label = stringResource(R.string.label_votes))
+            Spacer(Modifier.height(8.dp))
             LabeledValueItem(value = item.views, label = stringResource(R.string.label_views))
         }
         Spacer(Modifier.width(8.dp))
@@ -251,24 +251,15 @@ private fun LabeledValueItem(
     value: Int,
     label: String,
     modifier: Modifier = Modifier,
-    valueWidth: Dp = 42.dp,
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            modifier = Modifier
-                .width(valueWidth)
-                .wrapContentWidth(Alignment.End),
-            fontWeight = FontWeight.SemiBold,
-            text = value.toString(),
+            style = MaterialTheme.typography.labelMedium,
+            text = "$value $label",
             maxLines = 1,
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            style = MaterialTheme.typography.labelSmall,
-            text = label,
         )
     }
 }
