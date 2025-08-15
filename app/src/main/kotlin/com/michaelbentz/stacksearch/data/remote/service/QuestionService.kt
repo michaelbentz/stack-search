@@ -7,10 +7,10 @@ import retrofit2.http.Query
 interface QuestionService {
 
     @GET("questions")
-    suspend fun getLatestQuestions(
+    suspend fun getActiveQuestions(
         @Query("pagesize") pageSize: Int = 20,
         @Query("order") order: String = "desc",
-        @Query("sort") sort: String = "creation",
+        @Query("sort") sort: String = "activity",
         @Query("site") site: String = "stackoverflow",
         @Query("filter") filter: String = "withbody",
         @Query("page") page: Int = 1,

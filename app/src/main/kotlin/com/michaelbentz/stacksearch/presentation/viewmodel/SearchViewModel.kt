@@ -2,14 +2,14 @@ package com.michaelbentz.stacksearch.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.michaelbentz.stacksearch.domain.usecase.FetchLatestQuestionsUseCase
+import com.michaelbentz.stacksearch.domain.usecase.FetchActiveQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.SearchQuestionsUseCase
 import com.michaelbentz.stacksearch.presentation.mapper.toQuestionItemUiData
 import com.michaelbentz.stacksearch.presentation.model.SearchUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
 import com.michaelbentz.stacksearch.util.Resource
-import com.michaelbentz.stacksearch.util.UiDateFormatter
+import com.michaelbentz.stacksearch.util.SearchUiDateTimeFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,8 +22,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    @param:UiDateFormatter private val dateTimeFormatter: DateTimeFormatter,
-    private val fetchLatestQuestionsUseCase: FetchLatestQuestionsUseCase,
+    @param:SearchUiDateTimeFormatter private val dateTimeFormatter: DateTimeFormatter,
+    private val fetchActiveQuestionsUseCase: FetchActiveQuestionsUseCase,
     private val searchQuestionsUseCase: SearchQuestionsUseCase,
     getQuestionsUseCase: GetQuestionsUseCase,
 ) : ViewModel() {
@@ -61,13 +61,13 @@ class SearchViewModel @Inject constructor(
     )
 
     init {
-        refreshQuestions()
+        fetchActiveQuestions()
     }
 
-    private fun refreshQuestions() {
+    private fun fetchActiveQuestions() {
         viewModelScope.launch {
             withRefresh {
-                fetchLatestQuestionsUseCase().collect { resource ->
+                fetchActiveQuestionsUseCase().collect { resource ->
                     handleResource(resource)
                 }
             }

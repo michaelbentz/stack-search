@@ -20,7 +20,7 @@ data class AnswerUiData(
     val isAccepted: Boolean,
     val score: Int,
     val body: String,
-    val author: String,
+    val authorName: String,
     val reputation: Int,
     val created: String,
     val avatarUrl: String?,

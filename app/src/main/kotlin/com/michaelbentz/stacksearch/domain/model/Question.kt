@@ -4,7 +4,7 @@ data class Question(
     val id: Long,
     val title: String,
     val body: String,
-    val ownerName: String,
+    val ownerDisplayName: String?,
     val ownerReputation: Int?,
     val ownerProfileImage: String?,
     val tags: List<String>,

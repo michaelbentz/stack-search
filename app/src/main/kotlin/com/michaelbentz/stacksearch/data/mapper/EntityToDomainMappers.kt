@@ -9,7 +9,7 @@ internal fun QuestionEntity.toDomain() = Question(
     id = questionId,
     title = title,
     body = body,
-    ownerName = ownerDisplayName,
+    ownerDisplayName = ownerDisplayName,
     ownerReputation = ownerReputation,
     ownerProfileImage = ownerProfileImage,
     tags = tags,
@@ -17,7 +17,7 @@ internal fun QuestionEntity.toDomain() = Question(
     score = score,
     viewCount = viewCount,
     creationDateEpochSec = creationDateEpochSec,
-    lastActivityEpochSec = lastActivityEpochSec
+    lastActivityEpochSec = lastActivityEpochSec,
 )
 
 fun AnswerEntity.toDomain(): Answer = Answer(
@@ -31,5 +31,5 @@ fun AnswerEntity.toDomain(): Answer = Answer(
     lastEditEpochSec = lastEditEpochSec,
     ownerDisplayName = ownerDisplayName,
     ownerProfileImage = ownerProfileImage,
-    ownerReputation = ownerReputation
+    ownerReputation = ownerReputation,
 )

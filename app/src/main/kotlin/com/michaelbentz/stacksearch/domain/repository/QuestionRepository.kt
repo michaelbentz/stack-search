@@ -5,7 +5,7 @@ import com.michaelbentz.stacksearch.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface QuestionRepository {
-    fun fetchLatestQuestions(): Flow<Resource<Unit>>
+    fun fetchActiveQuestions(): Flow<Resource<Unit>>
     fun searchQuestions(query: String): Flow<Resource<Unit>>
     fun getQuestions(): Flow<List<Question>>
     fun getQuestionById(id: Long): Flow<Question?>

@@ -8,7 +8,7 @@ data class QuestionEntity(
     @PrimaryKey val questionId: Long,
     val title: String,
     val body: String,
-    val ownerDisplayName: String,
+    val ownerDisplayName: String?,
     val ownerReputation: Int?,
     val ownerProfileImage: String?,
     val tags: List<String>,
