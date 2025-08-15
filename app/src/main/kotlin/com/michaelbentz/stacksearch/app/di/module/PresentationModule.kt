@@ -1,6 +1,7 @@
 package com.michaelbentz.stacksearch.app.di.module
 
-import com.michaelbentz.stacksearch.util.UiDateFormatter
+import com.michaelbentz.stacksearch.util.DetailUiDateTimeFormatter
+import com.michaelbentz.stacksearch.util.SearchUiDateTimeFormatter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,8 +16,15 @@ object PresentationModule {
 
     @Provides
     @Singleton
-    @UiDateFormatter
-    fun provideUiDateFormatter(): DateTimeFormatter = DateTimeFormatter
-        .ofPattern("MMM d, yyyy")
+    @SearchUiDateTimeFormatter
+    fun provideSearchUiDateTimeFormatter(): DateTimeFormatter = DateTimeFormatter
+        .ofPattern("MMM d, ''yy")
+        .withZone(ZoneId.systemDefault())
+
+    @Provides
+    @Singleton
+    @DetailUiDateTimeFormatter
+    fun provideDetailUiDateTimeFormatter(): DateTimeFormatter = DateTimeFormatter
+        .ofPattern("MMM d, yyyy 'at' HH:mm")
         .withZone(ZoneId.systemDefault())
 }

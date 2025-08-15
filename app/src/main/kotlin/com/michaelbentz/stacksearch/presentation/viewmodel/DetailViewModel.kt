@@ -3,13 +3,15 @@ package com.michaelbentz.stacksearch.presentation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.michaelbentz.stacksearch.domain.model.Answer
 import com.michaelbentz.stacksearch.domain.usecase.FetchAnswersByQuestionIdUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetAnswersByQuestionIdUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetQuestionByIdUseCase
 import com.michaelbentz.stacksearch.presentation.mapper.toDetailUiData
+import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.screen.Screen
 import com.michaelbentz.stacksearch.presentation.state.DetailUiState
-import com.michaelbentz.stacksearch.util.UiDateFormatter
+import com.michaelbentz.stacksearch.util.DetailUiDateTimeFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,13 +29,15 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class DetailViewModel @Inject constructor(
-    @param:UiDateFormatter private val dateTimeFormatter: DateTimeFormatter,
+    @param:DetailUiDateTimeFormatter private val dateTimeFormatter: DateTimeFormatter,
     private val getQuestionByIdUseCase: GetQuestionByIdUseCase,
     private val getAnswersByQuestionIdUseCase: GetAnswersByQuestionIdUseCase,
     private val fetchAnswersByQuestionIdUseCase: FetchAnswersByQuestionIdUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _questionIdFlow = MutableStateFlow<Long?>(null)
+    private val _sortOrder = MutableStateFlow(AnswerSortOrder.Votes)
+    val sortOrder: StateFlow<AnswerSortOrder> = _sortOrder
 
     val uiState: StateFlow<DetailUiState> = _questionIdFlow
         .filterNotNull()
@@ -58,16 +62,30 @@ class DetailViewModel @Inject constructor(
     private fun getUiState(questionId: Long) = combine(
         getQuestionByIdUseCase(questionId),
         getAnswersByQuestionIdUseCase(questionId),
-    ) { question, answers ->
+        _sortOrder,
+    ) { question, answers, sortOrder ->
         if (question == null) {
             DetailUiState.Error("Question not found")
         } else {
+            val sortedAnswers = answers.sortedWith(sortOrder.comparator())
             DetailUiState.Data(
                 data = question.toDetailUiData(
-                    answers = answers,
-                    formatter = dateTimeFormatter,
+                    answers = sortedAnswers,
+                    dateTimeFormatter = dateTimeFormatter,
                 )
             )
+        }
+    }
+
+    fun setSortOrder(sort: AnswerSortOrder) {
+        _sortOrder.value = sort
+    }
+
+    private fun AnswerSortOrder.comparator(): Comparator<Answer> = when (this) {
+        AnswerSortOrder.Votes -> compareByDescending { it.score }
+        AnswerSortOrder.Oldest -> compareBy { it.creationDateEpochSec }
+        AnswerSortOrder.Active -> compareByDescending {
+            it.lastActivityEpochSec ?: it.creationDateEpochSec
         }
     }
 

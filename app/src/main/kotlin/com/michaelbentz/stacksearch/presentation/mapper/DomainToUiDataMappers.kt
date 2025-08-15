@@ -15,7 +15,7 @@ internal fun Question.toQuestionItemUiData(
     id = id,
     title = title,
     excerpt = body.stripHtml().trim().take(160),
-    owner = ownerName,
+    owner = ownerDisplayName.orEmpty(),
     askedDate = creationDateEpochSec.format(dateTimeFormatter),
     answers = answerCount,
     votes = score,
@@ -24,39 +24,39 @@ internal fun Question.toQuestionItemUiData(
 
 internal fun Question.toDetailUiData(
     answers: List<Answer>,
-    formatter: DateTimeFormatter
+    dateTimeFormatter: DateTimeFormatter,
 ): DetailUiData = DetailUiData(
     id = id,
     title = title,
-    askedDate = creationDateEpochSec.format(formatter),
-    activeDate = lastActivityEpochSec.format(formatter),
+    askedDate = creationDateEpochSec.format(dateTimeFormatter),
+    activeDate = lastActivityEpochSec.format(dateTimeFormatter),
     views = viewCount,
     votes = score,
-    body = body,
+    body = body.stripHtml().trim().take(340),
     tags = tags,
-    authorName = ownerName,
+    authorName = ownerDisplayName.orEmpty(),
     authorReputation = ownerReputation ?: 0,
     authorAvatarUrl = ownerProfileImage,
     answers = answers.map {
-        it.toAnswerUiData(formatter)
+        it.toAnswerUiData(dateTimeFormatter)
     }
 )
 
 private fun Answer.toAnswerUiData(
-    dateTimeFormatter: DateTimeFormatter
+    dateTimeFormatter: DateTimeFormatter,
 ): AnswerUiData = AnswerUiData(
     id = id,
     isAccepted = isAccepted,
     score = score,
-    body = body,
-    author = ownerDisplayName.orEmpty(),
+    body = body.stripHtml().trim().take(340),
+    authorName = ownerDisplayName.orEmpty(),
     reputation = ownerReputation ?: 0,
     created = creationDateEpochSec.format(dateTimeFormatter),
     avatarUrl = ownerProfileImage,
 )
 
-fun String.stripHtml(): String =
-    replace(Regex("<[^>]*>"), " ").replace(Regex("\\s+"), " ")
+private fun String.stripHtml(): String =
+    replace(Regex("<[^>]*>"), " ").replace(Regex("\\s+"), " ").trim()
 
 private fun Long.format(formatter: DateTimeFormatter): String =
     Instant.ofEpochSecond(this).atZone(ZoneId.systemDefault()).format(formatter)

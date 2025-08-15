@@ -1,6 +1,5 @@
 package com.michaelbentz.stacksearch.presentation.screen
 
-import android.text.Html
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,9 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,7 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.michaelbentz.stacksearch.R
-import com.michaelbentz.stacksearch.presentation.mapper.stripHtml
+import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.state.DetailUiState
@@ -78,6 +74,7 @@ fun DetailScreen(
     viewModel: DetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier
@@ -145,6 +142,8 @@ fun DetailScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 total = answers.size,
+                                onSelect = viewModel::setSortOrder,
+                                selected = sortOrder,
                             )
                             HorizontalDivider()
                         }
@@ -202,10 +201,9 @@ private fun QuestionHeader(
             Spacer(Modifier.height(8.dp))
             HorizontalDivider()
             Spacer(Modifier.height(16.dp))
-            // TODO: Handle HTML
             Text(
                 style = MaterialTheme.typography.bodyLarge,
-                text = body.stripHtml().trim().take(340),
+                text = body,
             )
             Spacer(Modifier.height(16.dp))
             if (tags.isNotEmpty()) {
@@ -321,7 +319,7 @@ private fun AuthorRowItem(
         Column {
             Text(
                 style = MaterialTheme.typography.bodyMedium,
-                text = name.decodeHtml(),
+                text = name,
             )
             Text(
                 style = MaterialTheme.typography.bodySmall,
@@ -338,9 +336,10 @@ private fun AuthorRowItem(
 @Composable
 private fun AnswersHeader(
     total: Int,
+    selected: AnswerSortOrder,
+    onSelect: (AnswerSortOrder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var selected by remember { mutableStateOf(AnswerSort.Votes) }
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -359,16 +358,18 @@ private fun AnswersHeader(
         SegmentedTabs(
             labels = labels,
             selectedIndex = when (selected) {
-                AnswerSort.Active -> 0
-                AnswerSort.Oldest -> 1
-                AnswerSort.Votes -> 2
+                AnswerSortOrder.Active -> 0
+                AnswerSortOrder.Oldest -> 1
+                AnswerSortOrder.Votes -> 2
             },
-            onSelect = { i ->
-                selected = when (i) {
-                    0 -> AnswerSort.Active
-                    1 -> AnswerSort.Oldest
-                    else -> AnswerSort.Votes
-                }
+            onSelect = { index ->
+                onSelect(
+                    when (index) {
+                        0 -> AnswerSortOrder.Active
+                        1 -> AnswerSortOrder.Oldest
+                        else -> AnswerSortOrder.Votes
+                    }
+                )
             },
             enabled = total > 0,
         )
@@ -393,9 +394,16 @@ private fun SegmentedTabs(
     val activeText = MaterialTheme.colorScheme.onSurface
 
     val disabledAlpha = 0.38f
-    val borderColor = if (enabled) outline else outline.copy(alpha = disabledAlpha)
-    val textColorInactive = if (enabled) inactiveText else inactiveText.copy(alpha = disabledAlpha)
-
+    val borderColor = if (enabled) {
+        outline
+    } else {
+        outline.copy(alpha = disabledAlpha)
+    }
+    val textColorInactive = if (enabled) {
+        inactiveText
+    } else {
+        inactiveText.copy(alpha = disabledAlpha)
+    }
     Surface(
         modifier = modifier
             .then(
@@ -507,8 +515,8 @@ private fun AnswerItem(
             Text(
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = TextOverflow.Ellipsis,
+                text = data.body,
                 maxLines = 14,
-                text = data.body.stripHtml().ifBlank { "" },
             )
             Spacer(Modifier.height(12.dp))
             MetaStamp(
@@ -517,7 +525,7 @@ private fun AnswerItem(
             )
             Spacer(Modifier.height(6.dp))
             AuthorRowItem(
-                name = data.author,
+                name = data.authorName,
                 reputation = data.reputation.formatThousands(),
                 avatarUrl = data.avatarUrl,
             )
@@ -526,7 +534,3 @@ private fun AnswerItem(
 }
 
 private fun Int.formatThousands(): String = "%,d".format(this)
-
-private enum class AnswerSort { Active, Oldest, Votes }
-
-fun String.decodeHtml(): String = Html.fromHtml(this, Html.FROM_HTML_MODE_LEGACY).toString()
