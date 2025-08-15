@@ -23,4 +23,5 @@ data class AnswerUiData(
     val author: String,
     val reputation: Int,
     val created: String,
+    val avatarUrl: String?,
 )

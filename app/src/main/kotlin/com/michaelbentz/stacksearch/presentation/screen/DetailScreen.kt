@@ -1,13 +1,17 @@
 package com.michaelbentz.stacksearch.presentation.screen
 
+import android.text.Html
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,18 +24,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -42,16 +44,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.michaelbentz.stacksearch.R
 import com.michaelbentz.stacksearch.presentation.mapper.stripHtml
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
@@ -78,7 +90,7 @@ fun DetailScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.content_description_back),
                         )
                     }
                 },
@@ -91,10 +103,9 @@ fun DetailScreen(
                         Text(
                             modifier = Modifier
                                 .wrapContentSize(),
-                            text = "More Info",
+                            text = stringResource(R.string.detail_title),
                         )
                     }
-
                 }
             )
         }
@@ -127,7 +138,6 @@ fun DetailScreen(
                                     .background(MaterialTheme.colorScheme.surface)
                                     .padding(16.dp),
                             )
-                            HorizontalDivider()
                         }
                         item {
                             AnswersHeader(
@@ -176,9 +186,18 @@ private fun QuestionHeader(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                AnnotatedLabeledValueItem(label = "Asked", value = askedDate)
-                AnnotatedLabeledValueItem(label = "Active", value = activeDate)
-                AnnotatedLabeledValueItem(label = "Viewed", value = "$views times")
+                AnnotatedLabeledValueItem(
+                    label = stringResource(R.string.label_asked),
+                    value = askedDate,
+                )
+                AnnotatedLabeledValueItem(
+                    label = stringResource(R.string.label_active),
+                    value = activeDate,
+                )
+                AnnotatedLabeledValueItem(
+                    label = stringResource(R.string.label_viewed_times),
+                    value = "$views times",
+                )
             }
             Spacer(Modifier.height(8.dp))
             HorizontalDivider()
@@ -202,15 +221,9 @@ private fun QuestionHeader(
                 }
                 Spacer(Modifier.height(8.dp))
             }
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(MaterialTheme.typography.bodySmall.toSpanStyle()) {
-                        append("Asked ")
-                        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                            append(askedDate)
-                        }
-                    }
-                }
+            MetaStamp(
+                prefix = stringResource(R.string.meta_asked),
+                dateText = askedDate,
             )
             Spacer(Modifier.height(8.dp))
             AuthorRowItem(
@@ -220,6 +233,25 @@ private fun QuestionHeader(
             )
         }
     }
+}
+
+@Composable
+private fun MetaStamp(
+    prefix: String,
+    dateText: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        modifier = modifier,
+        text = buildAnnotatedString {
+            withStyle(MaterialTheme.typography.bodySmall.toSpanStyle()) {
+                append("$prefix ")
+                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                    append(dateText)
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -289,7 +321,7 @@ private fun AuthorRowItem(
         Column {
             Text(
                 style = MaterialTheme.typography.bodyMedium,
-                text = name,
+                text = name.decodeHtml(),
             )
             Text(
                 style = MaterialTheme.typography.bodySmall,
@@ -314,57 +346,124 @@ private fun AnswersHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "$total Answers",
+            text = stringResource(R.string.answers_title, total),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         )
         Spacer(Modifier.weight(1f))
-        SortChip("Active", selected == AnswerSort.Active) {
-            selected = AnswerSort.Active
-        }
-        Spacer(Modifier.width(8.dp))
-        SortChip("Oldest", selected == AnswerSort.Oldest) {
-            selected = AnswerSort.Oldest
-        }
-        Spacer(Modifier.width(8.dp))
-        SortChip("Votes", selected == AnswerSort.Votes) {
-            selected = AnswerSort.Votes
-        }
+        val labels = listOf(
+            stringResource(R.string.sort_active),
+            stringResource(R.string.sort_oldest),
+            stringResource(R.string.sort_votes),
+        )
+        SegmentedTabs(
+            labels = labels,
+            selectedIndex = when (selected) {
+                AnswerSort.Active -> 0
+                AnswerSort.Oldest -> 1
+                AnswerSort.Votes -> 2
+            },
+            onSelect = { i ->
+                selected = when (i) {
+                    0 -> AnswerSort.Active
+                    1 -> AnswerSort.Oldest
+                    else -> AnswerSort.Votes
+                }
+            },
+            enabled = total > 0,
+        )
     }
 }
 
 @Composable
-private fun SortChip(
-    label: String,
-    selected: Boolean,
+private fun SegmentedTabs(
+    labels: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
+    enabled: Boolean = true,
+    shape: Shape = RectangleShape,
+    height: Dp = 36.dp,
+    horizontalPad: Dp = 10.dp,
+    verticalPad: Dp = 6.dp,
 ) {
-    FilterChip(
-        modifier = modifier,
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ),
-        border = if (selected) {
-            null
-        } else {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-        },
-        selected = selected,
-        onClick = onClick,
-        label = {
-            Text(
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = if (selected) {
-                    FontWeight.SemiBold
+    val outline = MaterialTheme.colorScheme.outline
+    val activeBg = MaterialTheme.colorScheme.surfaceVariant
+    val inactiveText = MaterialTheme.colorScheme.onSurfaceVariant
+    val activeText = MaterialTheme.colorScheme.onSurface
+
+    val disabledAlpha = 0.38f
+    val borderColor = if (enabled) outline else outline.copy(alpha = disabledAlpha)
+    val textColorInactive = if (enabled) inactiveText else inactiveText.copy(alpha = disabledAlpha)
+
+    Surface(
+        modifier = modifier
+            .then(
+                if (!enabled) {
+                    Modifier.semantics {
+                        disabled()
+                    }
                 } else {
-                    FontWeight.Normal
+                    Modifier
                 },
-                text = label,
-            )
+            ),
+        border = BorderStroke(1.dp, borderColor),
+        color = Color.Transparent,
+        tonalElevation = 0.dp,
+        shape = shape,
+    ) {
+        Row(
+            Modifier
+                .height(height)
+                .clip(shape),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            labels.forEachIndexed { index, label ->
+                val selected = index == selectedIndex
+                val bg = when {
+                    !enabled -> Color.Transparent
+                    selected -> activeBg
+                    else -> Color.Transparent
+                }
+                val labelColor = when {
+                    !enabled -> textColorInactive
+                    selected -> activeText
+                    else -> inactiveText
+                }
+                val segmentBase = Modifier
+                    .fillMaxHeight()
+                    .background(bg)
+                    .padding(horizontal = horizontalPad, vertical = verticalPad)
+
+                val clickableMod = if (enabled) {
+                    Modifier
+                        .clickable(role = Role.Tab) { onSelect(index) }
+                } else {
+                    Modifier
+                }
+                Box(
+                    modifier = segmentBase.then(clickableMod),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (enabled && selected) FontWeight.SemiBold else FontWeight.Normal,
+                        color = labelColor,
+                    )
+                }
+                if (index != labels.lastIndex) {
+                    Box(
+                        Modifier
+                            .padding(vertical = 1.dp)
+                            .fillMaxHeight()
+                            .width(1.dp)
+                            .background(borderColor),
+                    )
+                }
+            }
         }
-    )
+    }
 }
 
 @Composable
@@ -388,16 +487,15 @@ private fun AnswerItem(
             )
             Text(
                 style = MaterialTheme.typography.labelSmall,
-                text = "Votes",
+                text = stringResource(R.string.label_votes_title),
             )
             if (data.isAccepted) {
-                Spacer(Modifier.height(6.dp))
-                Icon(
+                Spacer(Modifier.height(8.dp))
+                Image(
                     modifier = Modifier
-                        .size(18.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = "Accepted",
+                        .size(28.dp),
+                    painter = painterResource(id = R.drawable.ic_check),
+                    contentDescription = stringResource(R.string.content_description_check),
                 )
             }
         }
@@ -413,15 +511,15 @@ private fun AnswerItem(
                 text = data.body.stripHtml().ifBlank { "" },
             )
             Spacer(Modifier.height(12.dp))
-            Text(
-                style = MaterialTheme.typography.bodySmall,
-                text = "Answered ${data.created}",
+            MetaStamp(
+                prefix = stringResource(R.string.meta_answered),
+                dateText = data.created,
             )
             Spacer(Modifier.height(6.dp))
             AuthorRowItem(
                 name = data.author,
                 reputation = data.reputation.formatThousands(),
-                avatarUrl = null,
+                avatarUrl = data.avatarUrl,
             )
         }
     }
@@ -430,3 +528,5 @@ private fun AnswerItem(
 private fun Int.formatThousands(): String = "%,d".format(this)
 
 private enum class AnswerSort { Active, Oldest, Votes }
+
+fun String.decodeHtml(): String = Html.fromHtml(this, Html.FROM_HTML_MODE_LEGACY).toString()

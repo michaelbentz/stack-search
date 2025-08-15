@@ -51,7 +51,8 @@ private fun Answer.toAnswerUiData(
     body = body,
     author = ownerDisplayName.orEmpty(),
     reputation = ownerReputation ?: 0,
-    created = creationDateEpochSec.format(dateTimeFormatter)
+    created = creationDateEpochSec.format(dateTimeFormatter),
+    avatarUrl = ownerProfileImage,
 )
 
 fun String.stripHtml(): String =
