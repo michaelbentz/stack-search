@@ -21,6 +21,7 @@ internal fun QuestionSearchResponse.toEntities(): List<QuestionEntity> {
             viewCount = question.viewCount,
             creationDateEpochSec = question.creationDateEpochSec,
             lastActivityEpochSec = question.lastActivityEpochSec,
+            lastEditEpochSec = question.lastEditEpochSec,
         )
     }
 }

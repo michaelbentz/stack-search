@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
@@ -64,6 +65,8 @@ import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.state.DetailUiState
+import com.michaelbentz.stacksearch.presentation.util.formatCompact
+import com.michaelbentz.stacksearch.presentation.util.formatThousands
 import com.michaelbentz.stacksearch.presentation.viewmodel.DetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -190,12 +193,16 @@ private fun QuestionHeader(
                     value = askedDate,
                 )
                 AnnotatedLabeledValueItem(
-                    label = stringResource(R.string.label_active),
-                    value = activeDate,
+                    label = stringResource(R.string.label_modified),
+                    value = modifiedDate,
                 )
                 AnnotatedLabeledValueItem(
-                    label = stringResource(R.string.label_viewed_times),
-                    value = "$views times",
+                    label = stringResource(R.string.label_viewed),
+                    value = pluralStringResource(
+                        R.plurals.views_count,
+                        views,
+                        views.formatCompact(),
+                    ),
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -221,7 +228,7 @@ private fun QuestionHeader(
             }
             MetaStamp(
                 prefix = stringResource(R.string.meta_asked),
-                dateText = askedDate,
+                dateText = askedExact,
             )
             Spacer(Modifier.height(8.dp))
             AuthorRowItem(
@@ -525,12 +532,10 @@ private fun AnswerItem(
             )
             Spacer(Modifier.height(6.dp))
             AuthorRowItem(
+                avatarUrl = data.avatarUrl,
                 name = data.authorName,
                 reputation = data.reputation.formatThousands(),
-                avatarUrl = data.avatarUrl,
             )
         }
     }
 }
-
-private fun Int.formatThousands(): String = "%,d".format(this)

@@ -8,10 +8,14 @@
     <string name="content_description_logo">Logo</string>
     <string name="content_description_menu">Menu</string>
     <string name="detail_title">More Info</string>
-    <string name="label_active">Active</string>
+    <string name="label_modified">Modified</string>
     <string name="label_answers">answers</string>
     <string name="label_asked">Asked</string>
-    <string name="label_viewed_times">Viewed %1$s</string>
+    <string name="label_viewed">Viewed</string>
+    <plurals name="views_count">
+        <item quantity="one">%1$s time</item>
+        <item quantity="other">%1$s times</item>
+    </plurals>
     <string name="label_views">views</string>
     <string name="label_votes">votes</string>
     <string name="label_votes_title">Votes</string>

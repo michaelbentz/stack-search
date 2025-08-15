@@ -17,6 +17,7 @@ data class QuestionSearchItem(
     @SerializedName("view_count") val viewCount: Int,
     @SerializedName("creation_date") val creationDateEpochSec: Long,
     @SerializedName("last_activity_date") val lastActivityEpochSec: Long,
+    @SerializedName("last_edit_date") val lastEditEpochSec: Long?,
 )
 
 data class QuestionOwner(

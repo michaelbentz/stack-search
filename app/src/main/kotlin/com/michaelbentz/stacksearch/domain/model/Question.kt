@@ -13,4 +13,5 @@ data class Question(
     val viewCount: Int,
     val creationDateEpochSec: Long,
     val lastActivityEpochSec: Long,
+    val lastEditEpochSec: Long?,
 )
