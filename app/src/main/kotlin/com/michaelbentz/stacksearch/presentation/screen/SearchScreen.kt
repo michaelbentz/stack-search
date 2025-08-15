@@ -198,12 +198,18 @@ private fun QuestionItemRow(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
+        Box(
             modifier = Modifier
                 .size(28.dp),
-            painter = painterResource(R.drawable.ic_check),
-            contentDescription = stringResource(R.string.content_description_check),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            if (item.isAccepted) {
+                Image(
+                    painter = painterResource(R.drawable.ic_check),
+                    contentDescription = stringResource(R.string.content_description_check),
+                )
+            }
+        }
         Spacer(Modifier.width(12.dp))
         Column(
             modifier = Modifier

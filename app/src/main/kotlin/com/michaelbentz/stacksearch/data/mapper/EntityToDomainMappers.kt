@@ -19,6 +19,7 @@ internal fun QuestionEntity.toDomain() = Question(
     creationDateEpochSec = creationDateEpochSec,
     lastActivityEpochSec = lastActivityEpochSec,
     lastEditEpochSec = lastEditEpochSec,
+    hasAcceptedAnswer = hasAcceptedAnswer,
 )
 
 fun AnswerEntity.toDomain(): Answer = Answer(

@@ -14,4 +14,5 @@ data class Question(
     val creationDateEpochSec: Long,
     val lastActivityEpochSec: Long,
     val lastEditEpochSec: Long?,
+    val hasAcceptedAnswer: Boolean,
 )

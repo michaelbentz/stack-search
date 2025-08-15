@@ -14,4 +14,5 @@ data class QuestionItemUiData(
     val answers: Int,
     val votes: Int,
     val views: Int,
+    val isAccepted: Boolean,
 )
