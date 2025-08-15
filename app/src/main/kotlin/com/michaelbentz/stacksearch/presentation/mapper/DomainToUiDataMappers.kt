@@ -5,6 +5,7 @@ import com.michaelbentz.stacksearch.domain.model.Question
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.model.QuestionItemUiData
+import com.michaelbentz.stacksearch.presentation.util.toTimeAgo
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -28,8 +29,9 @@ internal fun Question.toDetailUiData(
 ): DetailUiData = DetailUiData(
     id = id,
     title = title,
-    askedDate = creationDateEpochSec.format(dateTimeFormatter),
-    activeDate = lastActivityEpochSec.format(dateTimeFormatter),
+    askedDate = creationDateEpochSec.toTimeAgo(),
+    modifiedDate = (lastEditEpochSec ?: lastActivityEpochSec).toTimeAgo(),
+    askedExact = creationDateEpochSec.format(dateTimeFormatter),
     views = viewCount,
     votes = score,
     body = body.stripHtml().trim().take(340),
