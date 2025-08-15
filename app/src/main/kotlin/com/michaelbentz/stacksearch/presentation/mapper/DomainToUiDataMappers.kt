@@ -24,6 +24,7 @@ internal fun Question.toQuestionItemUiData(
     answers = answerCount,
     votes = score,
     views = viewCount,
+    isAccepted = hasAcceptedAnswer,
 )
 
 internal fun Question.toDetailUiData(

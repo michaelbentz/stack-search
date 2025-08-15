@@ -22,6 +22,7 @@ internal fun QuestionSearchResponse.toEntities(): List<QuestionEntity> {
             creationDateEpochSec = question.creationDateEpochSec,
             lastActivityEpochSec = question.lastActivityEpochSec,
             lastEditEpochSec = question.lastEditEpochSec,
+            hasAcceptedAnswer = question.isAnswered,
         )
     }
 }
