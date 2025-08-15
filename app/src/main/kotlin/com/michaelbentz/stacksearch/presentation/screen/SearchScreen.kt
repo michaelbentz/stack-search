@@ -16,7 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -34,8 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -82,7 +85,7 @@ fun SearchScreen(
                         },
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_menu),
+                            painter = painterResource(R.drawable.ic_menu),
                             contentDescription = stringResource(R.string.content_description_menu),
                         )
                     }
@@ -90,7 +93,7 @@ fun SearchScreen(
                 actions = { Spacer(Modifier.width(48.dp)) },
             )
         },
-        modifier = modifier
+        modifier = modifier,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -154,9 +157,9 @@ private fun SearchBar(
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var value by remember(query) {
-        mutableStateOf(query)
-    }
+    val focusManager = LocalFocusManager.current
+    var value by remember(query) { mutableStateOf(query) }
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -164,24 +167,25 @@ private fun SearchBar(
         OutlinedTextField(
             modifier = Modifier
                 .weight(1f),
-            singleLine = true,
-            placeholder = {
-                Text(text = stringResource(R.string.search_placeholder))
-            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    onSearch(value)
+                    focusManager.clearFocus()
+                }
+            ),
             value = value,
             onValueChange = {
                 value = it
                 onQueryChange(it)
             },
+            singleLine = true,
+            placeholder = {
+                Text(text = stringResource(R.string.search_placeholder))
+            },
         )
-        Spacer(Modifier.width(8.dp))
-        Button(
-            onClick = {
-                onSearch(value)
-            }
-        ) {
-            Text(text = stringResource(R.string.action_search))
-        }
     }
 }
 
@@ -197,7 +201,7 @@ private fun QuestionItemRow(
         Image(
             modifier = Modifier
                 .size(28.dp),
-            painter = painterResource(id = R.drawable.ic_check),
+            painter = painterResource(R.drawable.ic_check),
             contentDescription = stringResource(R.string.content_description_check),
         )
         Spacer(Modifier.width(12.dp))
