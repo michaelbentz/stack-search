@@ -5,6 +5,9 @@ import com.michaelbentz.stacksearch.domain.model.Question
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.model.QuestionItemUiData
+import com.michaelbentz.stacksearch.presentation.util.htmlToPlainText
+import com.michaelbentz.stacksearch.presentation.util.oneLineExcerpt
+import com.michaelbentz.stacksearch.presentation.util.stripHtml
 import com.michaelbentz.stacksearch.presentation.util.toTimeAgo
 import java.time.Instant
 import java.time.ZoneId
@@ -15,7 +18,7 @@ internal fun Question.toQuestionItemUiData(
 ): QuestionItemUiData = QuestionItemUiData(
     id = id,
     title = title,
-    excerpt = body.stripHtml().trim().take(160),
+    excerpt = body.htmlToPlainText().oneLineExcerpt(340),
     owner = ownerDisplayName.orEmpty(),
     askedDate = creationDateEpochSec.format(dateTimeFormatter),
     answers = answerCount,
@@ -34,7 +37,7 @@ internal fun Question.toDetailUiData(
     askedExact = creationDateEpochSec.format(dateTimeFormatter),
     views = viewCount,
     votes = score,
-    body = body.stripHtml().trim().take(340),
+    body = body.stripHtml().take(340),
     tags = tags,
     authorName = ownerDisplayName.orEmpty(),
     authorReputation = ownerReputation ?: 0,
@@ -50,15 +53,12 @@ private fun Answer.toAnswerUiData(
     id = id,
     isAccepted = isAccepted,
     score = score,
-    body = body.stripHtml().trim().take(340),
+    body = body.stripHtml().take(340),
     authorName = ownerDisplayName.orEmpty(),
     reputation = ownerReputation ?: 0,
     created = creationDateEpochSec.format(dateTimeFormatter),
     avatarUrl = ownerProfileImage,
 )
-
-private fun String.stripHtml(): String =
-    replace(Regex("<[^>]*>"), " ").replace(Regex("\\s+"), " ").trim()
 
 private fun Long.format(formatter: DateTimeFormatter): String =
     Instant.ofEpochSecond(this).atZone(ZoneId.systemDefault()).format(formatter)
