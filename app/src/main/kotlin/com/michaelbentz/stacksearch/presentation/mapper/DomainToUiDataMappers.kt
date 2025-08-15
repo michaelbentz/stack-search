@@ -14,7 +14,7 @@ internal fun Question.toQuestionItemUiData(
 ): QuestionItemUiData = QuestionItemUiData(
     id = id,
     title = title,
-    excerpt = (body ?: "").stripHtml().trim().take(160),
+    excerpt = body.stripHtml().trim().take(160),
     owner = ownerName,
     askedDate = creationDateEpochSec.format(dateTimeFormatter),
     answers = answerCount,
@@ -29,9 +29,17 @@ internal fun Question.toDetailUiData(
     id = id,
     title = title,
     askedDate = creationDateEpochSec.format(formatter),
+    activeDate = lastActivityEpochSec.format(formatter),
     views = viewCount,
     votes = score,
-    answers = answers.map { it.toAnswerUiData(formatter) }
+    body = body,
+    tags = tags,
+    authorName = ownerName,
+    authorReputation = ownerReputation ?: 0,
+    authorAvatarUrl = ownerProfileImage,
+    answers = answers.map {
+        it.toAnswerUiData(formatter)
+    }
 )
 
 private fun Answer.toAnswerUiData(
@@ -40,13 +48,13 @@ private fun Answer.toAnswerUiData(
     id = id,
     isAccepted = isAccepted,
     score = score,
-    bodyHtml = bodyHtml,
+    body = body,
     author = ownerDisplayName.orEmpty(),
     reputation = ownerReputation ?: 0,
     created = creationDateEpochSec.format(dateTimeFormatter)
 )
 
-private fun String.stripHtml(): String =
+fun String.stripHtml(): String =
     replace(Regex("<[^>]*>"), " ").replace(Regex("\\s+"), " ")
 
 private fun Long.format(formatter: DateTimeFormatter): String =

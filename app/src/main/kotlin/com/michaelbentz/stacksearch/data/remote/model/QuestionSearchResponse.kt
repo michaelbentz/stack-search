@@ -9,8 +9,9 @@ data class QuestionSearchResponse(
 data class QuestionSearchItem(
     @SerializedName("question_id") val questionId: Long,
     @SerializedName("title") val title: String,
-    @SerializedName("body") val body: String?,
+    @SerializedName("body") val body: String,
     @SerializedName("owner") val questionOwner: QuestionOwner,
+    @SerializedName("tags") val tags: List<String>,
     @SerializedName("answer_count") val answerCount: Int,
     @SerializedName("score") val score: Int,
     @SerializedName("view_count") val viewCount: Int,
@@ -20,4 +21,6 @@ data class QuestionSearchItem(
 
 data class QuestionOwner(
     @SerializedName("display_name") val displayName: String,
+    @SerializedName("reputation") val reputation: Int?,
+    @SerializedName("profile_image") val profileImage: String?,
 )
