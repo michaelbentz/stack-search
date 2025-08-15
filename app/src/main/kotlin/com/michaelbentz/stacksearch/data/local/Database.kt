@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.michaelbentz.stacksearch.data.local.dao.AnswerDao
 import com.michaelbentz.stacksearch.data.local.dao.QuestionDao
 import com.michaelbentz.stacksearch.data.local.entity.AnswerEntity
 import com.michaelbentz.stacksearch.data.local.entity.QuestionEntity
+import com.michaelbentz.stacksearch.data.local.typeconverter.TagConverter
 import com.michaelbentz.stacksearch.data.local.Database as StackSearchDatabase
 
 @Database(
@@ -18,6 +20,7 @@ import com.michaelbentz.stacksearch.data.local.Database as StackSearchDatabase
     exportSchema = false,
     version = 1,
 )
+@TypeConverters(TagConverter::class)
 abstract class Database : RoomDatabase() {
     abstract fun questionDao(): QuestionDao
     abstract fun answerDao(): AnswerDao

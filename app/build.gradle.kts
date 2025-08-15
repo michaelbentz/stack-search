@@ -31,6 +31,11 @@ android {
             "STACK_EXCHANGE_BASE_URL",
             "\"${buildProperties["STACK_EXCHANGE_BASE_URL"]}\""
         )
+        buildConfigField(
+            "String",
+            "STACK_EXCHANGE_API_KEY",
+            "\"${buildProperties["STACK_EXCHANGE_API_KEY"]}\""
+        )
     }
     buildTypes {
         release {

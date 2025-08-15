@@ -20,17 +20,21 @@ fun MainScreen(
             startDestination = Screen.Search.route,
         ) {
             composable(Screen.Search.route) {
-                SearchScreen(navController = navController)
+                SearchScreen(
+                    navController = navController,
+                )
             }
             composable(
                 route = Screen.Detail.route,
                 arguments = listOf(
                     navArgument(Screen.Detail.ARG_QUESTION_ID) {
                         type = NavType.LongType
-                    }
-                )
+                    },
+                ),
             ) {
-                DetailScreen()
+                DetailScreen(
+                    navController = navController,
+                )
             }
         }
     }

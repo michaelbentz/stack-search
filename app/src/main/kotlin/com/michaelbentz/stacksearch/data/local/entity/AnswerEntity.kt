@@ -13,7 +13,7 @@ data class AnswerEntity(
     val questionId: Long,
     val isAccepted: Boolean,
     val score: Int,
-    val bodyHtml: String,
+    val body: String,
     val creationDateEpochSec: Long,
     val lastActivityEpochSec: Long?,
     val lastEditEpochSec: Long?,

@@ -229,12 +229,12 @@ private fun QuestionItemRow(
         Spacer(Modifier.width(8.dp))
         Column(
             modifier = Modifier
-                .width(86.dp),
+                .width(94.dp),
             horizontalAlignment = Alignment.Start,
         ) {
-            LabeledValue(value = item.answers, label = stringResource(R.string.label_answers))
-            LabeledValue(value = item.votes, label = stringResource(R.string.label_votes))
-            LabeledValue(value = item.views, label = stringResource(R.string.label_views))
+            LabeledValueItem(value = item.answers, label = stringResource(R.string.label_answers))
+            LabeledValueItem(value = item.votes, label = stringResource(R.string.label_votes))
+            LabeledValueItem(value = item.views, label = stringResource(R.string.label_views))
         }
         Spacer(Modifier.width(8.dp))
         Image(
@@ -247,7 +247,7 @@ private fun QuestionItemRow(
 }
 
 @Composable
-private fun LabeledValue(
+private fun LabeledValueItem(
     value: Int,
     label: String,
     modifier: Modifier = Modifier,
