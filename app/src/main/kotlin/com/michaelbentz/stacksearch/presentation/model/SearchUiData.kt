@@ -2,10 +2,10 @@ package com.michaelbentz.stacksearch.presentation.model
 
 data class SearchUiData(
     val query: String = "",
-    val questionItems: List<QuestionItemUiData> = emptyList(),
+    val questions: List<QuestionUiData> = emptyList(),
 )
 
-data class QuestionItemUiData(
+data class QuestionUiData(
     val id: Long,
     val title: String,
     val excerpt: String,

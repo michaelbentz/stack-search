@@ -28,14 +28,14 @@ class SearchViewModel @Inject constructor(
     getQuestionsUseCase: GetQuestionsUseCase,
 ) : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
-    private val _refreshErrorState = MutableStateFlow<String?>(null)
-    private val _query = MutableStateFlow("")
+    private val _refreshError = MutableStateFlow<String?>(null)
+    val refreshError: StateFlow<String?> = _refreshError
 
-    val refreshErrorState: StateFlow<String?> = _refreshErrorState
+    private val _query = MutableStateFlow("")
 
     val uiState: StateFlow<SearchUiState> = combine(
         _isRefreshing,
-        _refreshErrorState,
+        _refreshError,
         _query,
         getQuestionsUseCase(),
     ) { isRefreshing, refreshError, query, questions ->
@@ -43,16 +43,21 @@ class SearchViewModel @Inject constructor(
             question.toQuestionItemUiData(dateTimeFormatter)
         }
         when {
-            questionItems.isNotEmpty() -> SearchUiState.Data(
+            refreshError != null && !isRefreshing && questionItems.isEmpty() -> {
+                SearchUiState.Error(refreshError)
+            }
+
+            isRefreshing && questionItems.isEmpty() -> {
+                SearchUiState.Loading
+            }
+
+            else -> SearchUiState.Data(
                 data = SearchUiData(
                     query = query,
-                    questionItems = questionItems,
+                    questions = questionItems,
                 ),
                 isRefreshing = isRefreshing,
             )
-
-            refreshError != null && !isRefreshing -> SearchUiState.Error(refreshError)
-            else -> SearchUiState.Loading
         }
     }.stateIn(
         scope = viewModelScope,
@@ -61,10 +66,10 @@ class SearchViewModel @Inject constructor(
     )
 
     init {
-        fetchActiveQuestions()
+        refreshInitialQuestions()
     }
 
-    private fun fetchActiveQuestions() {
+    private fun refreshInitialQuestions() {
         viewModelScope.launch {
             withRefresh {
                 fetchActiveQuestionsUseCase().collect { resource ->
@@ -72,10 +77,6 @@ class SearchViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    fun updateQuery(query: String) {
-        _query.value = query
     }
 
     fun searchQuestions(query: String) {
@@ -88,8 +89,28 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    fun updateQuery(query: String) {
+        _query.value = query
+    }
+
+    fun retryRefresh() {
+        viewModelScope.launch {
+            withRefresh {
+                val query = _query.value
+                val resourceFlow = if (query.isBlank()) {
+                    fetchActiveQuestionsUseCase()
+                } else {
+                    searchQuestionsUseCase(query)
+                }
+                resourceFlow.collect { resource ->
+                    handleResource(resource)
+                }
+            }
+        }
+    }
+
     private suspend fun withRefresh(block: suspend () -> Unit) {
-        _refreshErrorState.value = null
+        _refreshError.value = null
         _isRefreshing.value = true
         try {
             block()
@@ -101,8 +122,8 @@ class SearchViewModel @Inject constructor(
     private fun handleResource(resource: Resource<Unit>) {
         when (resource) {
             is Resource.Loading -> _isRefreshing.value = true
-            is Resource.Success -> _refreshErrorState.value = null
-            is Resource.Error -> _refreshErrorState.value = resource.message
+            is Resource.Success -> _refreshError.value = null
+            is Resource.Error -> _refreshError.value = resource.message
         }
     }
 

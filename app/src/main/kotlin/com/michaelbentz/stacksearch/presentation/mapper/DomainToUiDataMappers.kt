@@ -4,7 +4,7 @@ import com.michaelbentz.stacksearch.domain.model.Answer
 import com.michaelbentz.stacksearch.domain.model.Question
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
-import com.michaelbentz.stacksearch.presentation.model.QuestionItemUiData
+import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
 import com.michaelbentz.stacksearch.presentation.util.htmlToPlainText
 import com.michaelbentz.stacksearch.presentation.util.oneLineExcerpt
 import com.michaelbentz.stacksearch.presentation.util.stripHtml
@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter
 
 internal fun Question.toQuestionItemUiData(
     dateTimeFormatter: DateTimeFormatter,
-): QuestionItemUiData = QuestionItemUiData(
+): QuestionUiData = QuestionUiData(
     id = id,
     title = title,
     excerpt = body.htmlToPlainText().oneLineExcerpt(340),

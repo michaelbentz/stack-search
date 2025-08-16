@@ -1,4 +1,10 @@
 <resources>
+    <string name="no_network_title">No internet connection</string>
+    <string name="no_network_message">You’re offline. Check your connection and try again.</string>
+    <string name="no_network_confirm">Okay</string>
+    <string name="empty_questions">No questions to show yet</string>
+    <string name="empty_search_results">No results for “%1$s”</string>
+    <string name="action_retry">Retry</string>
     <string name="action_search">Search</string>
     <string name="answers_title">%1$d Answers</string>
     <string name="app_name">StackSearch</string>
