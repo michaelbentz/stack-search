@@ -5,9 +5,7 @@ import com.michaelbentz.stacksearch.domain.model.Question
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
-import com.michaelbentz.stacksearch.presentation.util.htmlToPlainText
-import com.michaelbentz.stacksearch.presentation.util.oneLineExcerpt
-import com.michaelbentz.stacksearch.presentation.util.stripHtml
+import com.michaelbentz.stacksearch.presentation.util.htmlExcerpt
 import com.michaelbentz.stacksearch.presentation.util.toTimeAgo
 import java.time.Instant
 import java.time.ZoneId
@@ -18,7 +16,7 @@ internal fun Question.toQuestionItemUiData(
 ): QuestionUiData = QuestionUiData(
     id = id,
     title = title,
-    excerpt = body.htmlToPlainText().oneLineExcerpt(340),
+    excerpt = body.htmlExcerpt(340),
     owner = ownerDisplayName.orEmpty(),
     askedDate = creationDateEpochSec.format(dateTimeFormatter),
     answers = answerCount,
@@ -38,7 +36,7 @@ internal fun Question.toDetailUiData(
     askedExact = creationDateEpochSec.format(dateTimeFormatter),
     views = viewCount,
     votes = score,
-    body = body.stripHtml().take(340),
+    body = body,
     tags = tags,
     authorName = ownerDisplayName.orEmpty(),
     authorReputation = ownerReputation ?: 0,
@@ -54,7 +52,7 @@ private fun Answer.toAnswerUiData(
     id = id,
     isAccepted = isAccepted,
     score = score,
-    body = body.stripHtml().take(340),
+    body = body,
     authorName = ownerDisplayName.orEmpty(),
     reputation = ownerReputation ?: 0,
     created = creationDateEpochSec.format(dateTimeFormatter),
