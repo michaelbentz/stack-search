@@ -1,11 +1,13 @@
 package com.michaelbentz.stacksearch.app.di.module
 
+import android.content.Context
 import com.michaelbentz.stacksearch.BuildConfig
 import com.michaelbentz.stacksearch.data.remote.service.AnswerService
 import com.michaelbentz.stacksearch.data.remote.service.QuestionService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -15,6 +17,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    @Provides
+    @Singleton
+    fun provideNetworkMonitor(
+        @ApplicationContext appContext: Context,
+    ): NetworkMonitor = NetworkMonitor(appContext)
 
     @Singleton
     @Provides

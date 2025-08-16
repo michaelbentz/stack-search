@@ -12,12 +12,13 @@ import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.screen.Screen
 import com.michaelbentz.stacksearch.presentation.state.DetailUiState
 import com.michaelbentz.stacksearch.util.DetailUiDateTimeFormatter
+import com.michaelbentz.stacksearch.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -35,13 +36,19 @@ class DetailViewModel @Inject constructor(
     private val fetchAnswersByQuestionIdUseCase: FetchAnswersByQuestionIdUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val _questionIdFlow = MutableStateFlow<Long?>(null)
+    private val _isRefreshing = MutableStateFlow(false)
+    private val _refreshError = MutableStateFlow<String?>(null)
+    val refreshError: StateFlow<String?> = _refreshError
+
+    private val _questionId = MutableStateFlow<Long?>(null)
     private val _sortOrder = MutableStateFlow(AnswerSortOrder.Votes)
     val sortOrder: StateFlow<AnswerSortOrder> = _sortOrder
 
-    val uiState: StateFlow<DetailUiState> = _questionIdFlow
+    val uiState: StateFlow<DetailUiState> = _questionId
         .filterNotNull()
-        .flatMapLatest(::getUiState)
+        .flatMapLatest { questionId ->
+            getUiState(questionId)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -52,28 +59,49 @@ class DetailViewModel @Inject constructor(
         val questionId: Long = checkNotNull(
             savedStateHandle[Screen.Detail.ARG_QUESTION_ID]
         )
-        _questionIdFlow.value = questionId
+        _questionId.value = questionId
 
         viewModelScope.launch {
-            fetchAnswersByQuestionIdUseCase(questionId).collect()
+            refreshAnswers(questionId)
         }
     }
 
     private fun getUiState(questionId: Long) = combine(
+        _isRefreshing,
+        _refreshError,
+        _sortOrder,
         getQuestionByIdUseCase(questionId),
         getAnswersByQuestionIdUseCase(questionId),
-        _sortOrder,
-    ) { question, answers, sortOrder ->
-        if (question == null) {
-            DetailUiState.Error("Question not found")
-        } else {
-            val sortedAnswers = answers.sortedWith(sortOrder.comparator())
-            DetailUiState.Data(
-                data = question.toDetailUiData(
-                    answers = sortedAnswers,
-                    dateTimeFormatter = dateTimeFormatter,
+    ) { isRefreshing, refreshError, sortOrder, question, answers ->
+        when {
+            refreshError != null && !isRefreshing && question == null && answers.isEmpty() -> {
+                DetailUiState.Error(refreshError)
+            }
+
+            question == null -> {
+                DetailUiState.Error("Unable to load question")
+            }
+
+            else -> {
+                val sortedAnswers = answers.sortedWith(sortOrder.comparator())
+                DetailUiState.Data(
+                    data = question.toDetailUiData(sortedAnswers, dateTimeFormatter),
+                    isRefreshing = isRefreshing,
                 )
-            )
+            }
+        }
+    }
+
+    fun retryRefresh() {
+        val questionId = _questionId.value ?: return
+        viewModelScope.launch {
+            refreshAnswers(questionId)
+        }
+    }
+
+    private suspend fun refreshAnswers(questionId: Long) = withRefresh {
+        fetchAnswersByQuestionIdUseCase(questionId).collectLatest { resource ->
+            handleResource(resource)
         }
     }
 
@@ -86,6 +114,24 @@ class DetailViewModel @Inject constructor(
         AnswerSortOrder.Oldest -> compareBy { it.creationDateEpochSec }
         AnswerSortOrder.Active -> compareByDescending {
             it.lastActivityEpochSec ?: it.creationDateEpochSec
+        }
+    }
+
+    private suspend fun withRefresh(block: suspend () -> Unit) {
+        _refreshError.value = null
+        _isRefreshing.value = true
+        try {
+            block()
+        } finally {
+            _isRefreshing.value = false
+        }
+    }
+
+    private fun handleResource(resource: Resource<Unit>) {
+        when (resource) {
+            is Resource.Loading -> _isRefreshing.value = true
+            is Resource.Success -> _refreshError.value = null
+            is Resource.Error -> _refreshError.value = resource.message
         }
     }
 

@@ -32,11 +32,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,6 +83,26 @@ fun DetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
+    val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
+
+    val isRefreshing = (uiState as? DetailUiState.Data)?.isRefreshing == true
+    val hasData = uiState is DetailUiState.Data
+
+    val shouldShowSnackbar = hasData && !isRefreshing && !refreshError.isNullOrBlank()
+    val retryActionLabel = stringResource(R.string.action_retry)
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(shouldShowSnackbar, refreshError) {
+        if (shouldShowSnackbar) {
+            val result = snackbarHostState.showSnackbar(
+                message = refreshError ?: "",
+                actionLabel = retryActionLabel,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.retryRefresh()
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier
@@ -108,10 +133,29 @@ fun DetailScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+            )
+        },
     ) { innerPadding ->
         when (val state = uiState) {
-            is DetailUiState.Error -> Unit
+            is DetailUiState.Error -> {
+                Box(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+
             is DetailUiState.Loading -> {
                 Box(
                     modifier = Modifier
@@ -150,17 +194,41 @@ fun DetailScreen(
                             )
                             HorizontalDivider()
                         }
-                        items(answers) { answer ->
-                            AnswerItem(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                data = answer,
-                            )
-                            HorizontalDivider()
-                        }
-                        item {
-                            Spacer(Modifier.height(16.dp))
+                        when {
+                            isRefreshing -> {
+                                item {
+                                    Spacer(Modifier.height(16.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 24.dp),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+
+                            answers.isNotEmpty() -> {
+                                items(answers) { answer ->
+                                    AnswerItem(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        answer = answer,
+                                    )
+                                    HorizontalDivider()
+                                }
+                                item {
+                                    Spacer(Modifier.height(16.dp))
+                                }
+                            }
+
+                            else -> {
+                                item {
+                                    Spacer(Modifier.height(8.dp))
+                                }
+                            }
                         }
                     }
                 }
@@ -483,7 +551,7 @@ private fun SegmentedTabs(
 
 @Composable
 private fun AnswerItem(
-    data: AnswerUiData,
+    answer: AnswerUiData,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -498,13 +566,13 @@ private fun AnswerItem(
             Text(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                text = data.score.toString(),
+                text = answer.score.toString(),
             )
             Text(
                 style = MaterialTheme.typography.labelSmall,
                 text = stringResource(R.string.label_votes_title),
             )
-            if (data.isAccepted) {
+            if (answer.isAccepted) {
                 Spacer(Modifier.height(8.dp))
                 Image(
                     modifier = Modifier
@@ -522,19 +590,19 @@ private fun AnswerItem(
             Text(
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = TextOverflow.Ellipsis,
-                text = data.body,
+                text = answer.body,
                 maxLines = 14,
             )
             Spacer(Modifier.height(12.dp))
             MetaStamp(
                 prefix = stringResource(R.string.meta_answered),
-                dateText = data.created,
+                dateText = answer.created,
             )
             Spacer(Modifier.height(6.dp))
             AuthorRowItem(
-                avatarUrl = data.avatarUrl,
-                name = data.authorName,
-                reputation = data.reputation.formatThousands(),
+                avatarUrl = answer.avatarUrl,
+                name = answer.authorName,
+                reputation = answer.reputation.formatThousands(),
             )
         }
     }

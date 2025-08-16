@@ -20,15 +20,20 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.michaelbentz.stacksearch.R
 import com.michaelbentz.stacksearch.presentation.component.SvgImage
-import com.michaelbentz.stacksearch.presentation.model.QuestionItemUiData
+import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
 import com.michaelbentz.stacksearch.presentation.viewmodel.SearchViewModel
 
@@ -58,10 +63,30 @@ fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val refreshErrorMessage by viewModel.refreshErrorState.collectAsStateWithLifecycle()
+    val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
+
+    val isRefreshing = (uiState as? SearchUiState.Data)?.isRefreshing == true
+    val hasData = (uiState as? SearchUiState.Data)?.data?.questions?.isNotEmpty() == true
     val query = (uiState as? SearchUiState.Data)?.data?.query ?: ""
 
+    val shouldShowSnackbar = hasData && !isRefreshing && !refreshError.isNullOrBlank()
+    val retryActionLabel = stringResource(R.string.action_retry)
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(shouldShowSnackbar, refreshError) {
+        if (shouldShowSnackbar) {
+            val result = snackbarHostState.showSnackbar(
+                message = refreshError ?: "",
+                actionLabel = retryActionLabel,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.retryRefresh()
+            }
+        }
+    }
+
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -81,7 +106,7 @@ fun SearchScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            // TODO: Wire up navigation drawer
+                            // TODO: Implement navigation drawer
                         },
                     ) {
                         Icon(
@@ -90,10 +115,27 @@ fun SearchScreen(
                         )
                     }
                 },
-                actions = { Spacer(Modifier.width(48.dp)) },
+                actions = {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (isRefreshing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        }
+                    }
+                }
             )
         },
-        modifier = modifier,
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+            )
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -124,27 +166,75 @@ fun SearchScreen(
 
                 is SearchUiState.Data -> {
                     with(state.data) {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                        ) {
-                            items(questionItems) { item ->
-                                QuestionItemRow(
-                                    item = item,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            navController.navigate(Screen.Detail.withArg(item.id))
-                                        }
-                                        .padding(12.dp),
+                        if (questions.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = if (state.data.query.isBlank()) {
+                                        stringResource(R.string.empty_questions)
+                                    } else {
+                                        stringResource(
+                                            R.string.empty_search_results,
+                                            state.data.query,
+                                        )
+                                    },
+                                    style = MaterialTheme.typography.bodyLarge
                                 )
-                                HorizontalDivider()
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                            ) {
+                                items(questions) { question ->
+                                    QuestionRow(
+                                        question = question,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                navController.navigate(
+                                                    Screen.Detail.withArg(
+                                                        question.id
+                                                    )
+                                                )
+                                            }
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    )
+                                    HorizontalDivider()
+                                }
                             }
                         }
                     }
                 }
 
-                is SearchUiState.Error -> Unit
+                is SearchUiState.Error -> {
+                    Box(
+                        modifier = modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.error,
+                                text = state.message,
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            FilledTonalButton(
+                                onClick = viewModel::retryRefresh,
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.action_retry),
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -190,8 +280,8 @@ private fun SearchBar(
 }
 
 @Composable
-private fun QuestionItemRow(
-    item: QuestionItemUiData,
+private fun QuestionRow(
+    question: QuestionUiData,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -203,7 +293,7 @@ private fun QuestionItemRow(
                 .size(28.dp),
             contentAlignment = Alignment.Center,
         ) {
-            if (item.isAccepted) {
+            if (question.isAccepted) {
                 Image(
                     painter = painterResource(R.drawable.ic_check),
                     contentDescription = stringResource(R.string.content_description_check),
@@ -219,19 +309,23 @@ private fun QuestionItemRow(
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
-                text = stringResource(R.string.question_title, item.title),
+                text = stringResource(R.string.question_title, question.title),
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 3,
-                text = item.excerpt,
+                text = question.excerpt,
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 style = MaterialTheme.typography.labelMedium,
-                text = stringResource(R.string.question_asked_by, item.askedDate, item.owner),
+                text = stringResource(
+                    R.string.question_asked_by,
+                    question.askedDate,
+                    question.owner
+                ),
             )
         }
         Spacer(Modifier.width(16.dp))
@@ -240,11 +334,14 @@ private fun QuestionItemRow(
                 .width(72.dp),
             horizontalAlignment = Alignment.Start,
         ) {
-            LabeledValueItem(value = item.answers, label = stringResource(R.string.label_answers))
+            LabeledValueItem(
+                value = question.answers,
+                label = stringResource(R.string.label_answers)
+            )
             Spacer(Modifier.height(8.dp))
-            LabeledValueItem(value = item.votes, label = stringResource(R.string.label_votes))
+            LabeledValueItem(value = question.votes, label = stringResource(R.string.label_votes))
             Spacer(Modifier.height(8.dp))
-            LabeledValueItem(value = item.views, label = stringResource(R.string.label_views))
+            LabeledValueItem(value = question.views, label = stringResource(R.string.label_views))
         }
         Spacer(Modifier.width(8.dp))
         Image(
