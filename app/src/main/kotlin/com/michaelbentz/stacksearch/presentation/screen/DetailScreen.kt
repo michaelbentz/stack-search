@@ -57,7 +57,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -66,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.michaelbentz.stacksearch.R
+import com.michaelbentz.stacksearch.presentation.component.HtmlWebView
 import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
@@ -276,9 +276,10 @@ private fun QuestionHeader(
             Spacer(Modifier.height(8.dp))
             HorizontalDivider()
             Spacer(Modifier.height(16.dp))
-            Text(
-                style = MaterialTheme.typography.bodyLarge,
-                text = body,
+            HtmlWebView(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                html = body,
             )
             Spacer(Modifier.height(16.dp))
             if (tags.isNotEmpty()) {
@@ -587,11 +588,10 @@ private fun AnswerItem(
             modifier = Modifier
                 .weight(1f),
         ) {
-            Text(
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Ellipsis,
-                text = answer.body,
-                maxLines = 14,
+            HtmlWebView(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                html = answer.body,
             )
             Spacer(Modifier.height(12.dp))
             MetaStamp(

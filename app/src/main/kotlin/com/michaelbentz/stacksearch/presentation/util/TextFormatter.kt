@@ -1,20 +1,12 @@
 package com.michaelbentz.stacksearch.presentation.util
 
-fun String.htmlToPlainText(): String {
-    return this
-        .replace(Regex("(?i)<br\\s*/?>"), "\n")
-        .replace(Regex("(?i)</p>"), "\n\n")
-        .replace(Regex("(?i)<li>"), "• ")
-        .replace(Regex("<[^>]*>"), " ")
-        .replace(Regex("[ \\t\\x0B\\f\\r]+"), " ")
-        .replace(Regex("\\n{3,}"), "\n\n")
+import androidx.core.text.HtmlCompat
+
+fun String.htmlExcerpt(maxChars: Int = 340): String {
+    return HtmlCompat.fromHtml(this, HtmlCompat.FROM_HTML_MODE_LEGACY)
+        .toString()
+        .replace('\u00A0', ' ')
+        .replace(Regex("\\s+"), " ")
         .trim()
-}
-
-fun String.oneLineExcerpt(maxChars: Int): String {
-    return replace(Regex("\\s+"), " ").trim().take(maxChars)
-}
-
-fun String.stripHtml(): String {
-    return replace(Regex("<[^>]*>"), " ").replace(Regex("\\s+"), " ").trim()
+        .take(maxChars)
 }
