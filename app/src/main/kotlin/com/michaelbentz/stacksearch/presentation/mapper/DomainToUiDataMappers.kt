@@ -5,6 +5,9 @@ import com.michaelbentz.stacksearch.domain.model.Question
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
+import com.michaelbentz.stacksearch.presentation.util.formatThousands
+import com.michaelbentz.stacksearch.presentation.util.formatViews
+import com.michaelbentz.stacksearch.presentation.util.formatVotes
 import com.michaelbentz.stacksearch.presentation.util.htmlExcerpt
 import com.michaelbentz.stacksearch.presentation.util.toTimeAgo
 import java.time.Instant
@@ -34,12 +37,12 @@ internal fun Question.toDetailUiData(
     askedDate = creationDateEpochSec.toTimeAgo(),
     modifiedDate = (lastEditEpochSec ?: lastActivityEpochSec).toTimeAgo(),
     askedExact = creationDateEpochSec.format(dateTimeFormatter),
-    views = viewCount,
+    views = viewCount.formatViews(),
     votes = score,
     body = body,
     tags = tags,
     authorName = ownerDisplayName.orEmpty(),
-    authorReputation = ownerReputation ?: 0,
+    authorReputation = (ownerReputation ?: 0).formatThousands(),
     authorAvatarUrl = ownerProfileImage,
     answers = answers.map {
         it.toAnswerUiData(dateTimeFormatter)
@@ -51,10 +54,11 @@ private fun Answer.toAnswerUiData(
 ): AnswerUiData = AnswerUiData(
     id = id,
     isAccepted = isAccepted,
-    score = score,
+    score = score.toString(),
+    scoreText = score.formatVotes(),
     body = body,
     authorName = ownerDisplayName.orEmpty(),
-    reputation = ownerReputation ?: 0,
+    reputation = (ownerReputation ?: 0).formatThousands(),
     created = creationDateEpochSec.format(dateTimeFormatter),
     avatarUrl = ownerProfileImage,
 )

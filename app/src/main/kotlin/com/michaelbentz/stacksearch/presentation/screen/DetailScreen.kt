@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
@@ -49,7 +49,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
@@ -57,6 +56,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -70,8 +70,6 @@ import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.state.DetailUiState
-import com.michaelbentz.stacksearch.presentation.util.formatCompact
-import com.michaelbentz.stacksearch.presentation.util.formatThousands
 import com.michaelbentz.stacksearch.presentation.viewmodel.DetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,14 +103,15 @@ fun DetailScreen(
     }
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier = modifier,
         topBar = {
             TopAppBar(
-                modifier = Modifier
-                    .height(56.dp),
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        },
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
@@ -120,17 +119,13 @@ fun DetailScreen(
                     }
                 },
                 title = {
-                    Row(
-                        modifier = Modifier
-                            .wrapContentSize(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .wrapContentSize(),
-                            text = stringResource(R.string.detail_title),
-                        )
-                    }
+                    Text(
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        text = stringResource(R.string.detail_title),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                    )
                 }
             )
         },
@@ -176,11 +171,10 @@ fun DetailScreen(
                     ) {
                         item {
                             QuestionHeader(
-                                data = this@with,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surface)
-                                    .padding(16.dp),
+                                    .background(MaterialTheme.colorScheme.surface),
+                                data = this@with,
                             )
                         }
                         item {
@@ -210,7 +204,12 @@ fun DetailScreen(
                             }
 
                             answers.isNotEmpty() -> {
-                                items(answers) { answer ->
+                                items(
+                                    key = {
+                                        it.id
+                                    },
+                                    items = answers,
+                                ) { answer ->
                                     AnswerItem(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -243,18 +242,22 @@ private fun QuestionHeader(
     modifier: Modifier = Modifier,
 ) {
     with(data) {
+        val horizontalPadding = 16.dp
         Column(
             modifier = modifier,
         ) {
             Text(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
                 style = MaterialTheme.typography.titleLarge,
                 text = title,
             )
             Spacer(Modifier.height(8.dp))
             FlowRow(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    .fillMaxWidth()
+                    .padding(horizontal = horizontalPadding),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 AnnotatedLabeledValueItem(
                     label = stringResource(R.string.label_asked),
@@ -266,26 +269,27 @@ private fun QuestionHeader(
                 )
                 AnnotatedLabeledValueItem(
                     label = stringResource(R.string.label_viewed),
-                    value = pluralStringResource(
-                        R.plurals.views_count,
-                        views,
-                        views.formatCompact(),
-                    ),
+                    value = views,
                 )
             }
             Spacer(Modifier.height(8.dp))
-            HorizontalDivider()
-            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+            )
+            Spacer(Modifier.height(4.dp))
             HtmlWebView(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
                 html = body,
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
             if (tags.isNotEmpty()) {
                 FlowRow(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPadding),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -296,15 +300,20 @@ private fun QuestionHeader(
                 Spacer(Modifier.height(8.dp))
             }
             MetaStamp(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
                 prefix = stringResource(R.string.meta_asked),
                 dateText = askedExact,
             )
             Spacer(Modifier.height(8.dp))
             AuthorRowItem(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+                reputation = authorReputation,
                 name = authorName,
-                reputation = authorReputation.formatThousands(),
                 avatarUrl = authorAvatarUrl,
             )
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
@@ -353,8 +362,12 @@ private fun TagItem(
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
         ),
+        elevation = CardDefaults.cardElevation(0.dp),
+        shape = RoundedCornerShape(8.dp),
+        border = null,
     ) {
         Text(
             modifier = Modifier
@@ -417,7 +430,8 @@ private fun AnswersHeader(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -561,29 +575,32 @@ private fun AnswerItem(
     ) {
         Column(
             modifier = Modifier
-                .width(40.dp),
+                .width(38.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Spacer(Modifier.height(12.dp))
             Text(
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                text = answer.score.toString(),
+                text = answer.score,
             )
             Text(
-                style = MaterialTheme.typography.labelSmall,
-                text = stringResource(R.string.label_votes_title),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                text = answer.scoreText,
             )
             if (answer.isAccepted) {
                 Spacer(Modifier.height(8.dp))
                 Image(
                     modifier = Modifier
-                        .size(28.dp),
+                        .size(34.dp),
                     painter = painterResource(id = R.drawable.ic_check),
                     contentDescription = stringResource(R.string.content_description_check),
                 )
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(8.dp))
+        val horizontalPadding = 8.dp
         Column(
             modifier = Modifier
                 .weight(1f),
@@ -593,16 +610,20 @@ private fun AnswerItem(
                     .fillMaxWidth(),
                 html = answer.body,
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(4.dp))
             MetaStamp(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
                 prefix = stringResource(R.string.meta_answered),
                 dateText = answer.created,
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(4.dp))
             AuthorRowItem(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+                reputation = answer.reputation,
                 avatarUrl = answer.avatarUrl,
                 name = answer.authorName,
-                reputation = answer.reputation.formatThousands(),
             )
         }
     }

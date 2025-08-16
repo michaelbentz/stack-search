@@ -1,7 +1,7 @@
 <resources>
-    <string name="no_network_title">No internet connection</string>
-    <string name="no_network_message">You’re offline. Check your connection and try again.</string>
-    <string name="no_network_confirm">Okay</string>
+    <string name="no_network_title">You\'re offline</string>
+    <string name="no_network_message">Check your internet connection and try again.</string>
+    <string name="no_network_confirm">OK</string>
     <string name="empty_questions">No questions to show yet</string>
     <string name="empty_search_results">No results for “%1$s”</string>
     <string name="action_retry">Retry</string>
@@ -18,13 +18,8 @@
     <string name="label_answers">answers</string>
     <string name="label_asked">Asked</string>
     <string name="label_viewed">Viewed</string>
-    <plurals name="views_count">
-        <item quantity="one">%1$s time</item>
-        <item quantity="other">%1$s times</item>
-    </plurals>
     <string name="label_views">views</string>
     <string name="label_votes">votes</string>
-    <string name="label_votes_title">Votes</string>
     <string name="meta_answered">Answered</string>
     <string name="meta_asked">Asked</string>
     <string name="question_asked_by">asked %1$s by %2$s</string>
