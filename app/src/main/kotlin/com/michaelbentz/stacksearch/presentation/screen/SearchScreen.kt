@@ -1,6 +1,7 @@
 package com.michaelbentz.stacksearch.presentation.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,14 +10,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -24,12 +29,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -42,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -162,8 +169,7 @@ fun SearchScreen(
         ) {
             SearchBar(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimens.spacingMedium),
+                    .fillMaxWidth(),
                 onQueryChange = viewModel::updateQuery,
                 onSearch = { query ->
                     showSwipeIndicator = false
@@ -171,7 +177,6 @@ fun SearchScreen(
                 },
                 query = query,
             )
-            Spacer(Modifier.height(dimens.spacingSmall))
             HorizontalDivider()
             PullToRefreshBox(
                 modifier = Modifier.fillMaxSize(),
@@ -298,34 +303,60 @@ private fun SearchBar(
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val dimens = LocalDimens.current
     val focusManager = LocalFocusManager.current
     var value by remember(query) { mutableStateOf(query) }
-
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OutlinedTextField(
+        TextField(
             modifier = Modifier
-                .weight(1f),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search,
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearch(value)
-                    focusManager.clearFocus()
-                }
-            ),
+                .fillMaxWidth()
+                .heightIn(max = dimens.spacing5XLarge)
+                .padding(
+                    horizontal = dimens.spacingMedium,
+                    vertical = dimens.spacingSmall,
+                ),
             value = value,
             onValueChange = {
                 value = it
                 onQueryChange(it)
             },
             singleLine = true,
-            placeholder = {
-                Text(text = stringResource(R.string.search_placeholder))
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.action_search),
+                )
             },
+            placeholder = {
+                Text(
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.search_placeholder),
+                )
+            },
+            textStyle = MaterialTheme.typography.bodyLarge,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    onSearch(value)
+                    focusManager.clearFocus()
+                }
+            ),
+            shape = RoundedCornerShape(dimens.radiusLarge),
+            colors = TextFieldDefaults.colors(
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color.White,
+            ),
         )
     }
 }
@@ -342,7 +373,7 @@ private fun QuestionRow(
     ) {
         Box(
             modifier = Modifier
-                .size(dimens.spacingXLarge2),
+                .size(dimens.spacingXXLarge),
             contentAlignment = Alignment.Center,
         ) {
             if (question.isAccepted) {

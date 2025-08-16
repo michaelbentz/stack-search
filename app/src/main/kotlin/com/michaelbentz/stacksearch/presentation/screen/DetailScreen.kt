@@ -105,29 +105,32 @@ fun DetailScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.content_description_back),
+            Column {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back),
+                            )
+                        }
+                    },
+                    title = {
+                        Text(
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            text = stringResource(R.string.detail_title),
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
                         )
                     }
-                },
-                title = {
-                    Text(
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        text = stringResource(R.string.detail_title),
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                    )
-                }
-            )
+                )
+                HorizontalDivider()
+            }
         },
         snackbarHost = {
             SnackbarHost(
@@ -172,6 +175,7 @@ fun DetailScreen(
                             QuestionHeader(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(top = dimens.spacingSmall)
                                     .background(MaterialTheme.colorScheme.surface),
                                 data = this@with,
                             )
@@ -519,7 +523,7 @@ private fun SegmentedTabs(
     ) {
         Row(
             Modifier
-                .height(dimens.spacingXLarge2)
+                .height(dimens.spacingXXLarge)
                 .clip(shape),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -583,7 +587,7 @@ private fun AnswerItem(
     ) {
         Column(
             modifier = Modifier
-                .width(dimens.spacingXLarge2),
+                .width(dimens.spacingXXLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(dimens.spacingMedium))
