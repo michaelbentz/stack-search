@@ -1,5 +1,6 @@
 package com.michaelbentz.stacksearch.presentation.screen
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,7 +21,6 @@ import com.michaelbentz.stacksearch.presentation.viewmodel.MainViewModel
 
 @Composable
 fun MainScreen(
-    modifier: Modifier = Modifier,
     mainViewModel: MainViewModel = hiltViewModel(),
 ) {
     val navController = rememberNavController()
@@ -38,13 +38,18 @@ fun MainScreen(
         showNoConnectivityDialog = isOffline
     }
 
-    Surface(modifier = modifier) {
+    Surface(
+        modifier = Modifier
+            .fillMaxSize(),
+    ) {
         NavHost(
             navController = navController,
             startDestination = Screen.Search.route,
         ) {
             composable(Screen.Search.route) {
                 SearchScreen(
+                    modifier = Modifier
+                        .fillMaxSize(),
                     navController = navController,
                 )
             }
@@ -57,6 +62,8 @@ fun MainScreen(
                 ),
             ) {
                 DetailScreen(
+                    modifier = Modifier
+                        .fillMaxSize(),
                     navController = navController,
                 )
             }

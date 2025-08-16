@@ -1,6 +1,8 @@
 package com.michaelbentz.stacksearch.presentation.component
 
+import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -11,11 +13,16 @@ fun HtmlWebView(
     modifier: Modifier = Modifier,
 ) {
     AndroidView(
-        modifier = modifier,
+        modifier = modifier
+            .wrapContentHeight(),
         factory = { context ->
             WebView(context).apply {
-                settings.javaScriptEnabled = false
-                settings.loadsImagesAutomatically = true
+                settings.apply {
+                    javaScriptEnabled = false
+                    domStorageEnabled = false
+                    loadsImagesAutomatically = true
+                    cacheMode = WebSettings.LOAD_NO_CACHE
+                }
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 loadDataWithBaseURL(
                     null,

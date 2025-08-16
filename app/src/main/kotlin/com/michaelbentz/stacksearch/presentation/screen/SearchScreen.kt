@@ -1,7 +1,6 @@
 package com.michaelbentz.stacksearch.presentation.screen
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +32,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -109,7 +112,7 @@ fun SearchScreen(
                     ) {
                         SvgImage(
                             modifier = Modifier
-                                .height(48.dp),
+                                .height(54.dp),
                             resourceId = R.raw.logo,
                             contentDescription = stringResource(R.string.content_description_logo),
                         )
@@ -130,13 +133,14 @@ fun SearchScreen(
                 actions = {
                     Box(
                         modifier = Modifier
-                            .size(48.dp),
+                            .size(56.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (isRefreshing && !showSwipeIndicator) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
+                                modifier = Modifier
+                                    .size(24.dp),
+                                strokeWidth = 3.dp,
                             )
                         }
                     }
@@ -158,8 +162,7 @@ fun SearchScreen(
             SearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = MaterialTheme.colorScheme.surface)
-                    .padding(12.dp),
+                    .padding(horizontal = 16.dp),
                 onQueryChange = viewModel::updateQuery,
                 onSearch = { query ->
                     showSwipeIndicator = false
@@ -167,6 +170,7 @@ fun SearchScreen(
                 },
                 query = query,
             )
+            Spacer(Modifier.height(8.dp))
             HorizontalDivider()
             PullToRefreshBox(
                 modifier = Modifier.fillMaxSize(),
@@ -176,6 +180,21 @@ fun SearchScreen(
                     showSwipeIndicator = true
                     viewModel.retryRefresh()
                 },
+                indicator = {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        contentAlignment = Alignment.TopCenter,
+                    ) {
+                        PullToRefreshDefaults.Indicator(
+                            state = pullState,
+                            isRefreshing = isRefreshing && showSwipeIndicator,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                }
             ) {
                 when (val state = uiState) {
                     is SearchUiState.Loading -> {
@@ -318,7 +337,7 @@ private fun QuestionRow(
     ) {
         Box(
             modifier = Modifier
-                .size(28.dp),
+                .size(36.dp),
             contentAlignment = Alignment.Center,
         ) {
             if (question.isAccepted) {
@@ -335,43 +354,50 @@ private fun QuestionRow(
         ) {
             Text(
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary,
+                fontWeight = FontWeight.Normal,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
                 text = stringResource(R.string.question_title, question.title),
+                maxLines = 1,
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 3,
+                fontWeight = FontWeight.Normal,
                 text = question.excerpt,
+                maxLines = 3,
             )
             Spacer(Modifier.height(8.dp))
-            Text(
-                style = MaterialTheme.typography.labelMedium,
-                text = stringResource(
-                    R.string.question_asked_by,
-                    question.askedDate,
-                    question.owner
-                ),
+            AskedByText(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                askedDate = question.askedDate,
+                owner = question.owner,
             )
         }
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(8.dp))
         Column(
             modifier = Modifier
-                .width(72.dp),
+                .width(64.dp),
             horizontalAlignment = Alignment.Start,
         ) {
             LabeledValueItem(
                 value = question.answers,
-                label = stringResource(R.string.label_answers)
+                label = stringResource(R.string.label_answers),
             )
             Spacer(Modifier.height(8.dp))
-            LabeledValueItem(value = question.votes, label = stringResource(R.string.label_votes))
+            LabeledValueItem(
+                value = question.votes,
+                label = stringResource(R.string.label_votes),
+            )
             Spacer(Modifier.height(8.dp))
-            LabeledValueItem(value = question.views, label = stringResource(R.string.label_views))
+            LabeledValueItem(
+                value = question.views,
+                label = stringResource(R.string.label_views),
+            )
         }
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(4.dp))
         Image(
             modifier = Modifier
                 .size(24.dp),
@@ -379,6 +405,43 @@ private fun QuestionRow(
             contentDescription = stringResource(R.string.content_description_arrow),
         )
     }
+}
+
+@Composable
+fun AskedByText(
+    askedDate: String,
+    owner: String,
+    modifier: Modifier = Modifier,
+    maxLines: Int = 2,
+) {
+    val text = stringResource(
+        R.string.question_asked_by,
+        askedDate,
+        owner,
+    )
+    val linkColor = MaterialTheme.colorScheme.secondary
+    val annotatedString = remember(text, owner, linkColor) {
+        buildAnnotatedString {
+            append(text)
+            if (owner.isNotBlank()) {
+                val start = text.lastIndexOf(owner)
+                if (start >= 0) {
+                    addStyle(
+                        SpanStyle(color = linkColor),
+                        start = start,
+                        end = start + owner.length,
+                    )
+                }
+            }
+        }
+    }
+    Text(
+        modifier = modifier,
+        style = MaterialTheme.typography.labelMedium,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = maxLines,
+        text = annotatedString,
+    )
 }
 
 @Composable
@@ -392,9 +455,11 @@ private fun LabeledValueItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            overflow = TextOverflow.Ellipsis,
             text = "$value $label",
-            maxLines = 1,
+            maxLines = 2,
         )
     }
 }

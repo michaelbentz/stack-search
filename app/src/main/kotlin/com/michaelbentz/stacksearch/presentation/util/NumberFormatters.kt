@@ -14,6 +14,15 @@ fun Int.formatCompact(locale: Locale = Locale.getDefault()): String {
     }
 }
 
+fun Int.formatViews(): String {
+    val suffix = if (this == 1) "view" else "views"
+    return "${this.formatCompact()} $suffix"
+}
+
+fun Int.formatVotes(): String {
+    return if (this == 1) "Vote" else "Votes"
+}
+
 fun format1DecOrInt(value: Double, locale: Locale): String {
     val scaled = (value * 10).roundToInt()
     val isInt = scaled % 10 == 0
