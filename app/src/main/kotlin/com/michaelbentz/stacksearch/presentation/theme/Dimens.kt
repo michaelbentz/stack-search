@@ -14,7 +14,7 @@ data class Dimens(
     val spacingMedium: Dp = 16.dp,
     val spacingLarge: Dp = 24.dp,
     val spacingXLarge: Dp = 32.dp,
-    val spacingXLarge2: Dp = 36.dp,
+    val spacingXXLarge: Dp = 36.dp,
     val spacing2XLarge: Dp = 40.dp,
     val spacing3XLarge: Dp = 48.dp,
     val spacing4XLarge: Dp = 56.dp,
@@ -29,6 +29,12 @@ data class Dimens(
     val imageLarge: Dp = 32.dp,
     val imageXLarge: Dp = 48.dp,
     val imageXXLarge: Dp = 56.dp,
+
+    val radiusSmall: Dp = 4.dp,
+    val radiusMedium: Dp = 8.dp,
+    val radiusLarge: Dp = 16.dp,
+    val radiusXLarge: Dp = 24.dp,
+    val radiusPill: Dp = 50.dp,
 
     val strokeHairline: Dp = 1.dp,
     val strokeMedium: Dp = 3.dp,
