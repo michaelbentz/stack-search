@@ -32,6 +32,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -69,10 +71,19 @@ fun SearchScreen(
     val hasData = (uiState as? SearchUiState.Data)?.data?.questions?.isNotEmpty() == true
     val query = (uiState as? SearchUiState.Data)?.data?.query ?: ""
 
+    val pullState = rememberPullToRefreshState()
+    var showSwipeIndicator by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing) {
+            showSwipeIndicator = false
+        }
+    }
+
     val shouldShowSnackbar = hasData && !isRefreshing && !refreshError.isNullOrBlank()
     val retryActionLabel = stringResource(R.string.action_retry)
-
     val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(shouldShowSnackbar, refreshError) {
         if (shouldShowSnackbar) {
             val result = snackbarHostState.showSnackbar(
@@ -80,6 +91,7 @@ fun SearchScreen(
                 actionLabel = retryActionLabel,
             )
             if (result == SnackbarResult.ActionPerformed) {
+                showSwipeIndicator = false
                 viewModel.retryRefresh()
             }
         }
@@ -121,7 +133,7 @@ fun SearchScreen(
                             .size(48.dp),
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (isRefreshing) {
+                        if (isRefreshing && !showSwipeIndicator) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
@@ -149,88 +161,104 @@ fun SearchScreen(
                     .background(color = MaterialTheme.colorScheme.surface)
                     .padding(12.dp),
                 onQueryChange = viewModel::updateQuery,
-                onSearch = viewModel::searchQuestions,
+                onSearch = { query ->
+                    showSwipeIndicator = false
+                    viewModel.searchQuestions(query)
+                },
                 query = query,
             )
             HorizontalDivider()
-            when (val state = uiState) {
-                is SearchUiState.Loading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
+            PullToRefreshBox(
+                modifier = Modifier.fillMaxSize(),
+                state = pullState,
+                isRefreshing = isRefreshing && showSwipeIndicator,
+                onRefresh = {
+                    showSwipeIndicator = true
+                    viewModel.retryRefresh()
+                },
+            ) {
+                when (val state = uiState) {
+                    is SearchUiState.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
-                }
 
-                is SearchUiState.Data -> {
-                    with(state.data) {
-                        if (questions.isEmpty()) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = if (state.data.query.isBlank()) {
-                                        stringResource(R.string.empty_questions)
-                                    } else {
-                                        stringResource(
-                                            R.string.empty_search_results,
-                                            state.data.query,
-                                        )
-                                    },
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                            ) {
-                                items(questions) { question ->
-                                    QuestionRow(
-                                        question = question,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                navController.navigate(
-                                                    Screen.Detail.withArg(
-                                                        question.id
-                                                    )
-                                                )
-                                            }
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                    is SearchUiState.Data -> {
+                        with(state.data) {
+                            if (questions.isEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = if (state.data.query.isBlank()) {
+                                            stringResource(R.string.empty_questions)
+                                        } else {
+                                            stringResource(
+                                                R.string.empty_search_results,
+                                                state.data.query,
+                                            )
+                                        },
+                                        style = MaterialTheme.typography.bodyLarge
                                     )
-                                    HorizontalDivider()
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                ) {
+                                    items(questions) { question ->
+                                        QuestionRow(
+                                            question = question,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    navController.navigate(
+                                                        Screen.Detail.withArg(
+                                                            question.id
+                                                        )
+                                                    )
+                                                }
+                                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        )
+                                        HorizontalDivider()
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                is SearchUiState.Error -> {
-                    Box(
-                        modifier = modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
+                    is SearchUiState.Error -> {
+                        Box(
+                            modifier = modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Text(
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.error,
-                                text = state.message,
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            FilledTonalButton(
-                                onClick = viewModel::retryRefresh,
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 Text(
-                                    text = stringResource(id = R.string.action_retry),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.error,
+                                    text = state.message,
                                 )
+                                Spacer(Modifier.height(12.dp))
+                                FilledTonalButton(
+                                    onClick = {
+                                        showSwipeIndicator = false
+                                        viewModel.retryRefresh()
+                                    }
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.action_retry),
+                                    )
+                                }
                             }
                         }
                     }

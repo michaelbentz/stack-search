@@ -39,22 +39,22 @@ class SearchViewModel @Inject constructor(
         _query,
         getQuestionsUseCase(),
     ) { isRefreshing, refreshError, query, questions ->
-        val questionItems = questions.map { question ->
+        val questionUiDataList = questions.map { question ->
             question.toQuestionItemUiData(dateTimeFormatter)
         }
         when {
-            refreshError != null && !isRefreshing && questionItems.isEmpty() -> {
+            refreshError != null && !isRefreshing && questionUiDataList.isEmpty() -> {
                 SearchUiState.Error(refreshError)
             }
 
-            isRefreshing && questionItems.isEmpty() -> {
+            isRefreshing && questionUiDataList.isEmpty() -> {
                 SearchUiState.Loading
             }
 
             else -> SearchUiState.Data(
                 data = SearchUiData(
                     query = query,
-                    questions = questionItems,
+                    questions = questionUiDataList,
                 ),
                 isRefreshing = isRefreshing,
             )
