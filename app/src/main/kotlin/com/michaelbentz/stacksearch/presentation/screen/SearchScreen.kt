@@ -50,7 +50,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -58,6 +57,7 @@ import com.michaelbentz.stacksearch.R
 import com.michaelbentz.stacksearch.presentation.component.SvgImage
 import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
+import com.michaelbentz.stacksearch.presentation.theme.LocalDimens
 import com.michaelbentz.stacksearch.presentation.viewmodel.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +67,7 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
+    val dimens = LocalDimens.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
 
@@ -112,7 +113,7 @@ fun SearchScreen(
                     ) {
                         SvgImage(
                             modifier = Modifier
-                                .height(54.dp),
+                                .height(dimens.imageXLarge),
                             resourceId = R.raw.logo,
                             contentDescription = stringResource(R.string.content_description_logo),
                         )
@@ -133,14 +134,14 @@ fun SearchScreen(
                 actions = {
                     Box(
                         modifier = Modifier
-                            .size(56.dp),
+                            .size(dimens.imageXXLarge),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (isRefreshing && !showSwipeIndicator) {
                             CircularProgressIndicator(
                                 modifier = Modifier
-                                    .size(24.dp),
-                                strokeWidth = 3.dp,
+                                    .size(dimens.icon),
+                                strokeWidth = dimens.strokeMedium,
                             )
                         }
                     }
@@ -162,7 +163,7 @@ fun SearchScreen(
             SearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = dimens.spacingMedium),
                 onQueryChange = viewModel::updateQuery,
                 onSearch = { query ->
                     showSwipeIndicator = false
@@ -170,7 +171,7 @@ fun SearchScreen(
                 },
                 query = query,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             HorizontalDivider()
             PullToRefreshBox(
                 modifier = Modifier.fillMaxSize(),
@@ -184,7 +185,7 @@ fun SearchScreen(
                     Box(
                         Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp),
+                            .padding(top = dimens.spacingMedium),
                         contentAlignment = Alignment.TopCenter,
                     ) {
                         PullToRefreshDefaults.Indicator(
@@ -244,7 +245,10 @@ fun SearchScreen(
                                                         )
                                                     )
                                                 }
-                                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                                .padding(
+                                                    horizontal = dimens.spacingMedium,
+                                                    vertical = dimens.spacingSmall,
+                                                ),
                                         )
                                         HorizontalDivider()
                                     }
@@ -267,7 +271,7 @@ fun SearchScreen(
                                     color = MaterialTheme.colorScheme.error,
                                     text = state.message,
                                 )
-                                Spacer(Modifier.height(12.dp))
+                                Spacer(Modifier.height(dimens.spacingMedium))
                                 FilledTonalButton(
                                     onClick = {
                                         showSwipeIndicator = false
@@ -275,7 +279,7 @@ fun SearchScreen(
                                     }
                                 ) {
                                     Text(
-                                        text = stringResource(id = R.string.action_retry),
+                                        text = stringResource(R.string.action_retry),
                                     )
                                 }
                             }
@@ -305,7 +309,7 @@ private fun SearchBar(
             modifier = Modifier
                 .weight(1f),
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
+                imeAction = ImeAction.Search,
             ),
             keyboardActions = KeyboardActions(
                 onSearch = {
@@ -331,13 +335,14 @@ private fun QuestionRow(
     question: QuestionUiData,
     modifier: Modifier = Modifier,
 ) {
+    val dimens = LocalDimens.current
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(36.dp),
+                .size(dimens.spacingXLarge2),
             contentAlignment = Alignment.Center,
         ) {
             if (question.isAccepted) {
@@ -347,7 +352,7 @@ private fun QuestionRow(
                 )
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(dimens.spacingSmall))
         Column(
             modifier = Modifier
                 .weight(1f),
@@ -360,7 +365,7 @@ private fun QuestionRow(
                 text = stringResource(R.string.question_title, question.title),
                 maxLines = 1,
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimens.spacingTiny))
             Text(
                 style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
@@ -368,7 +373,7 @@ private fun QuestionRow(
                 text = question.excerpt,
                 maxLines = 3,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             AskedByText(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -376,32 +381,32 @@ private fun QuestionRow(
                 owner = question.owner,
             )
         }
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(dimens.spacingSmall))
         Column(
             modifier = Modifier
-                .width(64.dp),
+                .width(dimens.spacing5XLarge),
             horizontalAlignment = Alignment.Start,
         ) {
             LabeledValueItem(
                 value = question.answers,
                 label = stringResource(R.string.label_answers),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             LabeledValueItem(
                 value = question.votes,
                 label = stringResource(R.string.label_votes),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             LabeledValueItem(
                 value = question.views,
                 label = stringResource(R.string.label_views),
             )
         }
-        Spacer(Modifier.width(4.dp))
+        Spacer(Modifier.width(dimens.spacingTiny))
         Image(
             modifier = Modifier
-                .size(24.dp),
-            painter = painterResource(id = R.drawable.ic_arrow_right),
+                .size(dimens.image),
+            painter = painterResource(R.drawable.ic_arrow_right),
             contentDescription = stringResource(R.string.content_description_arrow),
         )
     }

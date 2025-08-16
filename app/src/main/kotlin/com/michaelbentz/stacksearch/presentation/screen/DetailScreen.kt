@@ -58,8 +58,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -70,6 +68,7 @@ import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
 import com.michaelbentz.stacksearch.presentation.state.DetailUiState
+import com.michaelbentz.stacksearch.presentation.theme.LocalDimens
 import com.michaelbentz.stacksearch.presentation.viewmodel.DetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,6 +78,7 @@ fun DetailScreen(
     modifier: Modifier = Modifier,
     viewModel: DetailViewModel = hiltViewModel(),
 ) {
+    val dimens = LocalDimens.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
     val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
@@ -139,8 +139,7 @@ fun DetailScreen(
             is DetailUiState.Error -> {
                 Box(
                     modifier = modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
+                        .fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -181,7 +180,10 @@ fun DetailScreen(
                             AnswersHeader(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    .padding(
+                                        horizontal = dimens.spacingMedium,
+                                        vertical = dimens.spacingSmall,
+                                    ),
                                 total = answers.size,
                                 onSelect = viewModel::setSortOrder,
                                 selected = sortOrder,
@@ -191,11 +193,11 @@ fun DetailScreen(
                         when {
                             isRefreshing -> {
                                 item {
-                                    Spacer(Modifier.height(16.dp))
+                                    Spacer(Modifier.height(dimens.spacingMedium))
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 24.dp),
+                                            .padding(vertical = dimens.spacingLarge),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         CircularProgressIndicator()
@@ -213,19 +215,22 @@ fun DetailScreen(
                                     AnswerItem(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                            .padding(
+                                                horizontal = dimens.spacingMedium,
+                                                vertical = dimens.spacingSmall,
+                                            ),
                                         answer = answer,
                                     )
                                     HorizontalDivider()
                                 }
                                 item {
-                                    Spacer(Modifier.height(16.dp))
+                                    Spacer(Modifier.height(dimens.spacingMedium))
                                 }
                             }
 
                             else -> {
                                 item {
-                                    Spacer(Modifier.height(8.dp))
+                                    Spacer(Modifier.height(dimens.spacingSmall))
                                 }
                             }
                         }
@@ -241,8 +246,9 @@ private fun QuestionHeader(
     data: DetailUiData,
     modifier: Modifier = Modifier,
 ) {
+    val dimens = LocalDimens.current
     with(data) {
-        val horizontalPadding = 16.dp
+        val horizontalPadding = dimens.spacingMedium
         Column(
             modifier = modifier,
         ) {
@@ -252,12 +258,12 @@ private fun QuestionHeader(
                 style = MaterialTheme.typography.titleLarge,
                 text = title,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = horizontalPadding),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
             ) {
                 AnnotatedLabeledValueItem(
                     label = stringResource(R.string.label_asked),
@@ -272,32 +278,32 @@ private fun QuestionHeader(
                     value = views,
                 )
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             HorizontalDivider(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding),
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimens.spacingTiny))
             HtmlWebView(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = dimens.spacingSmall),
                 html = body,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             if (tags.isNotEmpty()) {
                 FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = horizontalPadding),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
+                    verticalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
                 ) {
                     tags.forEach { tag ->
                         TagItem(tag)
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimens.spacingSmall))
             }
             MetaStamp(
                 modifier = Modifier
@@ -305,7 +311,7 @@ private fun QuestionHeader(
                 prefix = stringResource(R.string.meta_asked),
                 dateText = askedExact,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
             AuthorRowItem(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding),
@@ -313,7 +319,7 @@ private fun QuestionHeader(
                 name = authorName,
                 avatarUrl = authorAvatarUrl,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimens.spacingSmall))
         }
     }
 }
@@ -360,18 +366,19 @@ private fun AnnotatedLabeledValueItem(
 private fun TagItem(
     text: String,
 ) {
+    val dimens = LocalDimens.current
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
         ),
-        elevation = CardDefaults.cardElevation(0.dp),
-        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(dimens.zero),
+        shape = RoundedCornerShape(dimens.spacingSmall),
         border = null,
     ) {
         Text(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = dimens.spacingMedium, vertical = dimens.spacingSmall),
             style = MaterialTheme.typography.labelLarge,
             text = text,
         )
@@ -385,6 +392,7 @@ private fun AuthorRowItem(
     avatarUrl: String?,
     modifier: Modifier = Modifier,
 ) {
+    val dimens = LocalDimens.current
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -392,7 +400,7 @@ private fun AuthorRowItem(
         if (!avatarUrl.isNullOrBlank()) {
             AsyncImage(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(dimens.image)
                     .clip(CircleShape),
                 model = avatarUrl,
                 contentDescription = null,
@@ -400,11 +408,11 @@ private fun AuthorRowItem(
         } else {
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(dimens.image)
                     .background(MaterialTheme.colorScheme.secondaryContainer),
             )
         }
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(dimens.spacingSmall))
         Column {
             Text(
                 style = MaterialTheme.typography.bodyMedium,
@@ -429,9 +437,10 @@ private fun AnswersHeader(
     onSelect: (AnswerSortOrder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val dimens = LocalDimens.current
     Row(
         modifier = modifier
-            .padding(vertical = 8.dp),
+            .padding(vertical = dimens.spacingSmall),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -474,10 +483,8 @@ private fun SegmentedTabs(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: Shape = RectangleShape,
-    height: Dp = 36.dp,
-    horizontalPad: Dp = 10.dp,
-    verticalPad: Dp = 6.dp,
 ) {
+    val dimens = LocalDimens.current
     val outline = MaterialTheme.colorScheme.outline
     val activeBg = MaterialTheme.colorScheme.surfaceVariant
     val inactiveText = MaterialTheme.colorScheme.onSurfaceVariant
@@ -505,14 +512,14 @@ private fun SegmentedTabs(
                     Modifier
                 },
             ),
-        border = BorderStroke(1.dp, borderColor),
+        border = BorderStroke(dimens.strokeHairline, borderColor),
         color = Color.Transparent,
-        tonalElevation = 0.dp,
+        tonalElevation = dimens.zero,
         shape = shape,
     ) {
         Row(
             Modifier
-                .height(height)
+                .height(dimens.spacingXLarge2)
                 .clip(shape),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -531,7 +538,7 @@ private fun SegmentedTabs(
                 val segmentBase = Modifier
                     .fillMaxHeight()
                     .background(bg)
-                    .padding(horizontal = horizontalPad, vertical = verticalPad)
+                    .padding(dimens.spacingSmall)
 
                 val clickableMod = if (enabled) {
                     Modifier
@@ -553,9 +560,9 @@ private fun SegmentedTabs(
                 if (index != labels.lastIndex) {
                     Box(
                         Modifier
-                            .padding(vertical = 1.dp)
+                            .padding(vertical = dimens.strokeHairline)
                             .fillMaxHeight()
-                            .width(1.dp)
+                            .width(dimens.strokeHairline)
                             .background(borderColor),
                     )
                 }
@@ -569,16 +576,17 @@ private fun AnswerItem(
     answer: AnswerUiData,
     modifier: Modifier = Modifier,
 ) {
+    val dimens = LocalDimens.current
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.Top,
     ) {
         Column(
             modifier = Modifier
-                .width(38.dp),
+                .width(dimens.spacingXLarge2),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(dimens.spacingMedium))
             Text(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
@@ -590,17 +598,17 @@ private fun AnswerItem(
                 text = answer.scoreText,
             )
             if (answer.isAccepted) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimens.spacingSmall))
                 Image(
                     modifier = Modifier
-                        .size(34.dp),
-                    painter = painterResource(id = R.drawable.ic_check),
+                        .size(dimens.imageLarge),
+                    painter = painterResource(R.drawable.ic_check),
                     contentDescription = stringResource(R.string.content_description_check),
                 )
             }
         }
-        Spacer(Modifier.width(8.dp))
-        val horizontalPadding = 8.dp
+        Spacer(Modifier.width(dimens.spacingSmall))
+        val horizontalPadding = dimens.spacingSmall
         Column(
             modifier = Modifier
                 .weight(1f),
@@ -610,14 +618,14 @@ private fun AnswerItem(
                     .fillMaxWidth(),
                 html = answer.body,
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimens.spacingTiny))
             MetaStamp(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding),
                 prefix = stringResource(R.string.meta_answered),
                 dateText = answer.created,
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimens.spacingTiny))
             AuthorRowItem(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding),
