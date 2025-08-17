@@ -32,16 +32,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,7 +58,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.michaelbentz.stacksearch.R
+import com.michaelbentz.stacksearch.presentation.component.ErrorBox
 import com.michaelbentz.stacksearch.presentation.component.HtmlWebView
+import com.michaelbentz.stacksearch.presentation.component.LoadingBox
+import com.michaelbentz.stacksearch.presentation.component.RefreshErrorSnackbar
 import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
 import com.michaelbentz.stacksearch.presentation.model.DetailUiData
@@ -85,22 +83,6 @@ fun DetailScreen(
 
     val isRefreshing = (uiState as? DetailUiState.Data)?.isRefreshing == true
     val hasData = uiState is DetailUiState.Data
-
-    val shouldShowSnackbar = hasData && !isRefreshing && !refreshError.isNullOrBlank()
-    val retryActionLabel = stringResource(R.string.action_retry)
-
-    val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(shouldShowSnackbar, refreshError) {
-        if (shouldShowSnackbar) {
-            val result = snackbarHostState.showSnackbar(
-                message = refreshError ?: "",
-                actionLabel = retryActionLabel,
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                viewModel.retryRefresh()
-            }
-        }
-    }
 
     Scaffold(
         modifier = modifier,
@@ -133,35 +115,22 @@ fun DetailScreen(
             }
         },
         snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
+            RefreshErrorSnackbar(
+                hasData = hasData,
+                isRefreshing = isRefreshing,
+                errorMessage = refreshError,
+                onRetry = {
+                    viewModel.retryRefresh()
+                },
             )
         },
     ) { innerPadding ->
         when (val state = uiState) {
+            is DetailUiState.Loading -> LoadingBox()
             is DetailUiState.Error -> {
-                Box(
-                    modifier = modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = state.message,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            }
-
-            is DetailUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
+                ErrorBox(
+                    message = state.message,
+                )
             }
 
             is DetailUiState.Data -> {
@@ -269,15 +238,15 @@ private fun QuestionHeader(
                     .padding(horizontal = horizontalPadding),
                 horizontalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
             ) {
-                AnnotatedLabeledValueItem(
+                LabeledValue(
                     label = stringResource(R.string.label_asked),
                     value = askedDate,
                 )
-                AnnotatedLabeledValueItem(
+                LabeledValue(
                     label = stringResource(R.string.label_modified),
                     value = modifiedDate,
                 )
-                AnnotatedLabeledValueItem(
+                LabeledValue(
                     label = stringResource(R.string.label_viewed),
                     value = views,
                 )
@@ -301,7 +270,7 @@ private fun QuestionHeader(
                         .fillMaxWidth()
                         .padding(horizontal = horizontalPadding),
                     horizontalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
-                    verticalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
+                    verticalArrangement = Arrangement.spacedBy(dimens.spacingTiny),
                 ) {
                     tags.forEach { tag ->
                         TagItem(tag)
@@ -309,14 +278,14 @@ private fun QuestionHeader(
                 }
                 Spacer(Modifier.height(dimens.spacingSmall))
             }
-            MetaStamp(
+            LabeledValue(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding),
-                prefix = stringResource(R.string.meta_asked),
-                dateText = askedExact,
+                label = stringResource(R.string.meta_asked),
+                value = askedExact,
             )
-            Spacer(Modifier.height(dimens.spacingSmall))
-            AuthorRowItem(
+            Spacer(Modifier.height(dimens.spacingTiny))
+            AuthorRow(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding),
                 reputation = authorReputation,
@@ -326,44 +295,6 @@ private fun QuestionHeader(
             Spacer(Modifier.height(dimens.spacingSmall))
         }
     }
-}
-
-@Composable
-private fun MetaStamp(
-    prefix: String,
-    dateText: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        modifier = modifier,
-        text = buildAnnotatedString {
-            withStyle(MaterialTheme.typography.bodySmall.toSpanStyle()) {
-                append("$prefix ")
-                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                    append(dateText)
-                }
-            }
-        }
-    )
-}
-
-@Composable
-private fun AnnotatedLabeledValueItem(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        modifier = modifier,
-        text = buildAnnotatedString {
-            withStyle(MaterialTheme.typography.bodyMedium.toSpanStyle()) {
-                append("$label ")
-                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                    append(value)
-                }
-            }
-        },
-    )
 }
 
 @Composable
@@ -386,51 +317,6 @@ private fun TagItem(
             style = MaterialTheme.typography.labelLarge,
             text = text,
         )
-    }
-}
-
-@Composable
-private fun AuthorRowItem(
-    name: String,
-    reputation: String,
-    avatarUrl: String?,
-    modifier: Modifier = Modifier,
-) {
-    val dimens = LocalDimens.current
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (!avatarUrl.isNullOrBlank()) {
-            AsyncImage(
-                modifier = Modifier
-                    .size(dimens.image)
-                    .clip(CircleShape),
-                model = avatarUrl,
-                contentDescription = null,
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(dimens.image)
-                    .background(MaterialTheme.colorScheme.secondaryContainer),
-            )
-        }
-        Spacer(Modifier.width(dimens.spacingSmall))
-        Column {
-            Text(
-                style = MaterialTheme.typography.bodyMedium,
-                text = name,
-            )
-            Text(
-                style = MaterialTheme.typography.bodySmall,
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                        append(reputation)
-                    }
-                },
-            )
-        }
     }
 }
 
@@ -623,19 +509,88 @@ private fun AnswerItem(
                 html = answer.body,
             )
             Spacer(Modifier.height(dimens.spacingTiny))
-            MetaStamp(
-                modifier = Modifier
-                    .padding(horizontal = horizontalPadding),
-                prefix = stringResource(R.string.meta_answered),
-                dateText = answer.created,
+            LabeledValue(
+                modifier = Modifier.padding(horizontal = horizontalPadding),
+                label = stringResource(R.string.meta_answered),
+                value = answer.created,
             )
             Spacer(Modifier.height(dimens.spacingTiny))
-            AuthorRowItem(
+            AuthorRow(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding),
                 reputation = answer.reputation,
                 avatarUrl = answer.avatarUrl,
                 name = answer.authorName,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LabeledValue(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    boldValue: Boolean = true,
+) {
+    Text(
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyMedium,
+        text = buildAnnotatedString {
+            append("$label ")
+            withStyle(
+                if (boldValue) {
+                    SpanStyle(fontWeight = FontWeight.SemiBold)
+                } else {
+                    SpanStyle(fontWeight = FontWeight.Normal)
+                }
+            ) {
+                append(value)
+            }
+        },
+    )
+}
+
+@Composable
+private fun AuthorRow(
+    name: String,
+    reputation: String,
+    avatarUrl: String?,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalDimens.current
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (!avatarUrl.isNullOrBlank()) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(dimens.image)
+                    .clip(CircleShape),
+                model = avatarUrl,
+                contentDescription = null,
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(dimens.image)
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+            )
+        }
+        Spacer(Modifier.width(dimens.spacingSmall))
+        Column {
+            Text(
+                style = MaterialTheme.typography.bodyMedium,
+                text = name,
+            )
+            Text(
+                style = MaterialTheme.typography.bodySmall,
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                        append(reputation)
+                    }
+                },
             )
         }
     }

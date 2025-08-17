@@ -24,7 +24,7 @@ class QuestionRepositoryImpl @Inject constructor(
             questionDao.replaceAll(response.toEntities())
             emit(Resource.Success(Unit))
         } catch (exception: Exception) {
-            emit(Resource.Error(ERROR_FETCH_LATEST_QUESTIONS, exception))
+            emit(Resource.Error(ERROR_FETCH_QUESTIONS, exception))
         }
     }
 
@@ -35,7 +35,7 @@ class QuestionRepositoryImpl @Inject constructor(
             questionDao.replaceAll(response.toEntities())
             emit(Resource.Success(Unit))
         } catch (exception: Exception) {
-            emit(Resource.Error(ERROR_SEARCH_QUESTIONS, exception))
+            emit(Resource.Error(ERROR_FETCH_QUESTIONS, exception))
         }
     }
 
@@ -52,7 +52,6 @@ class QuestionRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        private const val ERROR_FETCH_LATEST_QUESTIONS = "Failed to fetch latest questions"
-        private const val ERROR_SEARCH_QUESTIONS = "Failed to load question search"
+        private const val ERROR_FETCH_QUESTIONS = "Failed to load questions"
     }
 }
