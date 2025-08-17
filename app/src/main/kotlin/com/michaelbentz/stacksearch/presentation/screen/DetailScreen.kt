@@ -377,7 +377,7 @@ private fun SegmentedTabs(
 ) {
     val dimens = LocalDimens.current
     val outline = MaterialTheme.colorScheme.outline
-    val activeBg = MaterialTheme.colorScheme.surfaceVariant
+    val activeBackground = MaterialTheme.colorScheme.surfaceVariant
     val inactiveText = MaterialTheme.colorScheme.onSurfaceVariant
     val activeText = MaterialTheme.colorScheme.onSurface
 
@@ -416,9 +416,9 @@ private fun SegmentedTabs(
         ) {
             labels.forEachIndexed { index, label ->
                 val selected = index == selectedIndex
-                val bg = when {
+                val backgroundColor = when {
                     !enabled -> Color.Transparent
-                    selected -> activeBg
+                    selected -> activeBackground
                     else -> Color.Transparent
                 }
                 val labelColor = when {
@@ -426,19 +426,22 @@ private fun SegmentedTabs(
                     selected -> activeText
                     else -> inactiveText
                 }
-                val segmentBase = Modifier
+                val segmentModifier = Modifier
                     .fillMaxHeight()
-                    .background(bg)
+                    .background(backgroundColor)
                     .padding(dimens.spacingSmall)
 
-                val clickableMod = if (enabled) {
+                val clickableModifier = if (enabled) {
                     Modifier
-                        .clickable(role = Role.Tab) { onSelect(index) }
+                        .clickable(role = Role.Tab) {
+                            onSelect(index)
+                        }
                 } else {
                     Modifier
                 }
                 Box(
-                    modifier = segmentBase.then(clickableMod),
+                    modifier = segmentModifier
+                        .then(clickableModifier),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -474,7 +477,7 @@ private fun AnswerItem(
     ) {
         Column(
             modifier = Modifier
-                .width(dimens.spacingXXLarge),
+                .width(dimens.spacing2XLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(dimens.spacingMedium))
