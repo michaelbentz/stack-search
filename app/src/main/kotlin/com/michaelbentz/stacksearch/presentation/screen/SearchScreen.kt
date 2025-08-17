@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +67,7 @@ import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
 import com.michaelbentz.stacksearch.presentation.theme.LocalDimens
 import com.michaelbentz.stacksearch.presentation.viewmodel.SearchViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +80,10 @@ fun SearchScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
 
+    val coroutineScope = rememberCoroutineScope()
     val pullState = rememberPullToRefreshState()
+    val lazyListState = rememberLazyListState()
+
     var showSwipeIndicator by remember { mutableStateOf(false) }
 
     val dataState = uiState as? SearchUiState.Data
@@ -167,6 +173,9 @@ fun SearchScreen(
                 onSearch = { query ->
                     showSwipeIndicator = false
                     viewModel.searchQuestions(query)
+                    coroutineScope.launch {
+                        lazyListState.scrollToItem(0)
+                    }
                 },
                 query = inputQuery,
             )
@@ -230,6 +239,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     modifier = Modifier
                                         .fillMaxSize(),
+                                    state = lazyListState,
                                 ) {
                                     items(
                                         key = {
