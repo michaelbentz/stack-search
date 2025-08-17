@@ -2,7 +2,7 @@ package com.michaelbentz.stacksearch.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.michaelbentz.stacksearch.domain.usecase.FetchActiveQuestionsUseCase
+import com.michaelbentz.stacksearch.domain.usecase.FetchNewestQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.SearchQuestionsUseCase
 import com.michaelbentz.stacksearch.presentation.mapper.question.toQuestionItemUiData
@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     @param:SearchUiDateTimeFormatter private val dateTimeFormatter: DateTimeFormatter,
-    private val fetchActiveQuestionsUseCase: FetchActiveQuestionsUseCase,
+    private val fetchNewestQuestionsUseCase: FetchNewestQuestionsUseCase,
     private val searchQuestionsUseCase: SearchQuestionsUseCase,
     getQuestionsUseCase: GetQuestionsUseCase,
 ) : ViewModel() {
@@ -69,15 +69,13 @@ class SearchViewModel @Inject constructor(
     )
 
     init {
-        refreshInitialQuestions()
+        refreshNewestQuestions()
     }
 
-    private fun refreshInitialQuestions() {
+    private fun refreshNewestQuestions() {
         viewModelScope.launch {
             withRefresh {
-                fetchActiveQuestionsUseCase().collect { resource ->
-                    handleResource(resource)
-                }
+                fetchNewestQuestionsUseCase().collect(::handleResource)
             }
         }
     }
@@ -102,7 +100,7 @@ class SearchViewModel @Inject constructor(
                 val query = _inputQuery.value
                 val resourceFlow = if (query.isBlank()) {
                     _submittedQuery.value = ""
-                    fetchActiveQuestionsUseCase()
+                    fetchNewestQuestionsUseCase()
                 } else {
                     searchQuestionsUseCase(query)
                 }

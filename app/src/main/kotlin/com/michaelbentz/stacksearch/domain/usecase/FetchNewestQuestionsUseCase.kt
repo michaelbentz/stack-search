@@ -5,10 +5,10 @@ import com.michaelbentz.stacksearch.util.Resource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class FetchActiveQuestionsUseCase @Inject constructor(
+class FetchNewestQuestionsUseCase @Inject constructor(
     private val questionRepository: QuestionRepository,
 ) {
     operator fun invoke(): Flow<Resource<Unit>> {
-        return questionRepository.fetchActiveQuestions()
+        return questionRepository.fetchNewestQuestions()
     }
 }

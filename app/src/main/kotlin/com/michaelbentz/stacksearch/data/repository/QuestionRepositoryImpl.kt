@@ -17,10 +17,10 @@ class QuestionRepositoryImpl @Inject constructor(
     private val questionDao: QuestionDao,
 ) : QuestionRepository {
 
-    override fun fetchActiveQuestions(): Flow<Resource<Unit>> = flow {
+    override fun fetchNewestQuestions(): Flow<Resource<Unit>> = flow {
         emit(Resource.Loading)
         try {
-            val response = questionService.getActiveQuestions()
+            val response = questionService.getNewestQuestions()
             questionDao.replaceAll(response.toEntities())
             emit(Resource.Success(Unit))
         } catch (exception: Exception) {
