@@ -58,8 +58,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.michaelbentz.stacksearch.R
+import com.michaelbentz.stacksearch.presentation.common.HtmlWebView
 import com.michaelbentz.stacksearch.presentation.component.ErrorBox
-import com.michaelbentz.stacksearch.presentation.component.HtmlWebView
 import com.michaelbentz.stacksearch.presentation.component.LoadingBox
 import com.michaelbentz.stacksearch.presentation.component.RefreshErrorSnackbar
 import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder

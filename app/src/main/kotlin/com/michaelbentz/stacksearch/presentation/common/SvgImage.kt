@@ -1,4 +1,4 @@
-package com.michaelbentz.stacksearch.presentation.component
+package com.michaelbentz.stacksearch.presentation.common
 
 import androidx.annotation.RawRes
 import androidx.compose.runtime.Composable

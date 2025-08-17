@@ -1,4 +1,4 @@
-package com.michaelbentz.stacksearch.app.di.module
+package com.michaelbentz.stacksearch.data.remote.interceptor
 
 import okhttp3.Interceptor
 import okhttp3.Response

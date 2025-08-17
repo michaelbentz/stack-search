@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.michaelbentz.stacksearch.domain.usecase.FetchActiveQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetQuestionsUseCase
 import com.michaelbentz.stacksearch.domain.usecase.SearchQuestionsUseCase
-import com.michaelbentz.stacksearch.presentation.mapper.toQuestionItemUiData
+import com.michaelbentz.stacksearch.presentation.mapper.question.toQuestionItemUiData
 import com.michaelbentz.stacksearch.presentation.model.SearchUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
 import com.michaelbentz.stacksearch.util.Resource

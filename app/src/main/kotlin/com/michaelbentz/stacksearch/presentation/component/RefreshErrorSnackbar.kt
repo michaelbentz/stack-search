@@ -18,9 +18,8 @@ fun RefreshErrorSnackbar(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
     val retryLabel = stringResource(R.string.action_retry)
-
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(hasData, isRefreshing, errorMessage) {
         if (hasData && !isRefreshing && !errorMessage.isNullOrBlank()) {
             val result = snackbarHostState.showSnackbar(

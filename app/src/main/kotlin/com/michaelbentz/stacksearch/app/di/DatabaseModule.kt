@@ -1,4 +1,4 @@
-package com.michaelbentz.stacksearch.app.di.module
+package com.michaelbentz.stacksearch.app.di
 
 import android.content.Context
 import com.michaelbentz.stacksearch.data.local.Database

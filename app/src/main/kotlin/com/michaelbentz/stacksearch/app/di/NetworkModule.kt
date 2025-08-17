@@ -1,7 +1,9 @@
-package com.michaelbentz.stacksearch.app.di.module
+package com.michaelbentz.stacksearch.app.di
 
 import android.content.Context
 import com.michaelbentz.stacksearch.BuildConfig
+import com.michaelbentz.stacksearch.app.network.NetworkMonitor
+import com.michaelbentz.stacksearch.data.remote.interceptor.ApiKeyInterceptor
 import com.michaelbentz.stacksearch.data.remote.service.AnswerService
 import com.michaelbentz.stacksearch.data.remote.service.QuestionService
 import dagger.Module
@@ -27,8 +29,9 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideOkHttpClient(): OkHttpClient {
+        val apiKeyInterceptor = ApiKeyInterceptor(BuildConfig.STACK_EXCHANGE_API_KEY)
         return OkHttpClient.Builder()
-            .addInterceptor(ApiKeyInterceptor(BuildConfig.STACK_EXCHANGE_API_KEY))
+            .addInterceptor(apiKeyInterceptor)
             .build()
     }
 
