@@ -77,12 +77,17 @@ fun SearchScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
 
-    val isRefreshing = (uiState as? SearchUiState.Data)?.isRefreshing == true
-    val hasData = (uiState as? SearchUiState.Data)?.data?.questions?.isNotEmpty() == true
-    val query = (uiState as? SearchUiState.Data)?.data?.query ?: ""
-
     val pullState = rememberPullToRefreshState()
     var showSwipeIndicator by remember { mutableStateOf(false) }
+
+    val dataState = uiState as? SearchUiState.Data
+    val searchData = dataState?.data
+
+    val isRefreshing = dataState?.isRefreshing == true
+    val inputQuery = searchData?.inputQuery.orEmpty()
+    val hasData = searchData?.questions?.isNotEmpty() == true
+    val isSwipeRefreshing = isRefreshing && showSwipeIndicator
+    val isTopBarRefreshing = isRefreshing && !showSwipeIndicator
 
     LaunchedEffect(isRefreshing) {
         if (!isRefreshing) {
@@ -126,7 +131,7 @@ fun SearchScreen(
                             .size(dimens.imageXXLarge),
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (isRefreshing && !showSwipeIndicator) {
+                        if (isTopBarRefreshing) {
                             CircularProgressIndicator(
                                 modifier = Modifier
                                     .size(dimens.icon),
@@ -163,13 +168,13 @@ fun SearchScreen(
                     showSwipeIndicator = false
                     viewModel.searchQuestions(query)
                 },
-                query = query,
+                query = inputQuery,
             )
             HorizontalDivider()
             PullToRefreshBox(
                 modifier = Modifier.fillMaxSize(),
                 state = pullState,
-                isRefreshing = isRefreshing && showSwipeIndicator,
+                isRefreshing = isSwipeRefreshing,
                 onRefresh = {
                     showSwipeIndicator = true
                     viewModel.retryRefresh()
@@ -182,10 +187,10 @@ fun SearchScreen(
                         contentAlignment = Alignment.TopCenter,
                     ) {
                         PullToRefreshDefaults.Indicator(
-                            state = pullState,
-                            isRefreshing = isRefreshing && showSwipeIndicator,
                             containerColor = MaterialTheme.colorScheme.primary,
                             color = MaterialTheme.colorScheme.onPrimary,
+                            isRefreshing = isSwipeRefreshing,
+                            state = pullState,
                         )
                     }
                 }
@@ -210,15 +215,15 @@ fun SearchScreen(
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
-                                        text = if (state.data.query.isBlank()) {
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        text = if (submittedQuery.isBlank()) {
                                             stringResource(R.string.empty_questions)
                                         } else {
                                             stringResource(
                                                 R.string.empty_search_results,
-                                                state.data.query,
+                                                submittedQuery,
                                             )
                                         },
-                                        style = MaterialTheme.typography.bodyLarge
                                     )
                                 }
                             } else {
@@ -226,7 +231,12 @@ fun SearchScreen(
                                     modifier = Modifier
                                         .fillMaxSize(),
                                 ) {
-                                    items(questions) { question ->
+                                    items(
+                                        key = {
+                                            it.id
+                                        },
+                                        items = questions,
+                                    ) { question ->
                                         QuestionRow(
                                             question = question,
                                             modifier = Modifier

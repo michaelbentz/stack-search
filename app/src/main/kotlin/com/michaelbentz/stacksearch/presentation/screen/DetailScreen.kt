@@ -81,8 +81,9 @@ fun DetailScreen(
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
     val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
 
-    val isRefreshing = (uiState as? DetailUiState.Data)?.isRefreshing == true
     val hasData = uiState is DetailUiState.Data
+    val dataState = uiState as? DetailUiState.Data
+    val isRefreshing = dataState?.isRefreshing == true
 
     Scaffold(
         modifier = modifier,

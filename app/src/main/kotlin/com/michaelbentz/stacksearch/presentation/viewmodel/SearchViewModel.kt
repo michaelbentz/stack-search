@@ -31,14 +31,16 @@ class SearchViewModel @Inject constructor(
     private val _refreshError = MutableStateFlow<String?>(null)
     val refreshError: StateFlow<String?> = _refreshError
 
-    private val _query = MutableStateFlow("")
+    private val _inputQuery = MutableStateFlow("")
+    private val _submittedQuery = MutableStateFlow("")
 
     val uiState: StateFlow<SearchUiState> = combine(
         _isRefreshing,
         _refreshError,
-        _query,
+        _inputQuery,
+        _submittedQuery,
         getQuestionsUseCase(),
-    ) { isRefreshing, refreshError, query, questions ->
+    ) { isRefreshing, refreshError, inputQuery, submittedQuery, questions ->
         val questionUiDataList = questions.map { question ->
             question.toQuestionItemUiData(dateTimeFormatter)
         }
@@ -53,7 +55,8 @@ class SearchViewModel @Inject constructor(
 
             else -> SearchUiState.Data(
                 data = SearchUiData(
-                    query = query,
+                    inputQuery = inputQuery,
+                    submittedQuery = submittedQuery,
                     questions = questionUiDataList,
                 ),
                 isRefreshing = isRefreshing,
@@ -80,24 +83,25 @@ class SearchViewModel @Inject constructor(
     }
 
     fun searchQuestions(query: String) {
+        if (_submittedQuery.value == query) return
         viewModelScope.launch {
+            _submittedQuery.value = query
             withRefresh {
-                searchQuestionsUseCase(query).collect { resource ->
-                    handleResource(resource)
-                }
+                searchQuestionsUseCase(query).collect(::handleResource)
             }
         }
     }
 
     fun updateQuery(query: String) {
-        _query.value = query
+        _inputQuery.value = query
     }
 
     fun retryRefresh() {
         viewModelScope.launch {
             withRefresh {
-                val query = _query.value
+                val query = _inputQuery.value
                 val resourceFlow = if (query.isBlank()) {
+                    _submittedQuery.value = ""
                     fetchActiveQuestionsUseCase()
                 } else {
                     searchQuestionsUseCase(query)
