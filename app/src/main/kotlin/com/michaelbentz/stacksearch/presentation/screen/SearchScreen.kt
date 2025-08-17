@@ -57,10 +57,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.michaelbentz.stacksearch.R
+import com.michaelbentz.stacksearch.presentation.common.SvgImage
 import com.michaelbentz.stacksearch.presentation.component.ErrorBox
 import com.michaelbentz.stacksearch.presentation.component.LoadingBox
 import com.michaelbentz.stacksearch.presentation.component.RefreshErrorSnackbar
-import com.michaelbentz.stacksearch.presentation.component.SvgImage
 import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
 import com.michaelbentz.stacksearch.presentation.theme.LocalDimens

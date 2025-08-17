@@ -7,7 +7,7 @@ import com.michaelbentz.stacksearch.domain.model.Answer
 import com.michaelbentz.stacksearch.domain.usecase.FetchAnswersByQuestionIdUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetAnswersByQuestionIdUseCase
 import com.michaelbentz.stacksearch.domain.usecase.GetQuestionByIdUseCase
-import com.michaelbentz.stacksearch.presentation.mapper.toDetailUiData
+import com.michaelbentz.stacksearch.presentation.mapper.question.toDetailUiData
 import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
 import com.michaelbentz.stacksearch.presentation.screen.Screen
 import com.michaelbentz.stacksearch.presentation.state.DetailUiState

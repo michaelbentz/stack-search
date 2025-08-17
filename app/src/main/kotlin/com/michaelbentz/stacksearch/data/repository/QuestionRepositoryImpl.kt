@@ -1,8 +1,8 @@
 package com.michaelbentz.stacksearch.data.repository
 
 import com.michaelbentz.stacksearch.data.local.dao.QuestionDao
-import com.michaelbentz.stacksearch.data.mapper.toDomain
-import com.michaelbentz.stacksearch.data.mapper.toEntities
+import com.michaelbentz.stacksearch.data.mapper.entity.toDomain
+import com.michaelbentz.stacksearch.data.mapper.remote.toEntities
 import com.michaelbentz.stacksearch.data.remote.service.QuestionService
 import com.michaelbentz.stacksearch.domain.model.Question
 import com.michaelbentz.stacksearch.domain.repository.QuestionRepository

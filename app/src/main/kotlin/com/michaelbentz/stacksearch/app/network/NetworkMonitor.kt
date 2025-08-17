@@ -1,4 +1,4 @@
-package com.michaelbentz.stacksearch.app.di.module
+package com.michaelbentz.stacksearch.app.network
 
 import android.content.Context
 import android.net.ConnectivityManager

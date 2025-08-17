@@ -5,16 +5,20 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class TagConverter {
+
     private val gson = Gson()
-    private val type = object : TypeToken<List<String>>() {}.type
+    private val listType = object : TypeToken<List<String>>() {}.type
 
     @TypeConverter
     fun fromList(list: List<String>?): String {
-        return if (list.isNullOrEmpty()) "[]" else gson.toJson(list, type)
+        return if (list.isNullOrEmpty()) "[]" else gson.toJson(list, listType)
     }
 
     @TypeConverter
     fun toList(json: String?): List<String> {
-        return if (json.isNullOrBlank()) emptyList() else gson.fromJson(json, type)
+        if (json.isNullOrBlank()) return emptyList()
+        return runCatching {
+            gson.fromJson<List<String>>(json, listType)
+        }.getOrElse { emptyList() }
     }
 }

@@ -15,7 +15,7 @@ import com.michaelbentz.stacksearch.data.local.Database as StackSearchDatabase
 @Database(
     entities = [
         QuestionEntity::class,
-        AnswerEntity::class
+        AnswerEntity::class,
     ],
     exportSchema = false,
     version = 1,

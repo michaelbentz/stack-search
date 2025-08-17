@@ -42,7 +42,7 @@ fun StackSearchTheme(
         MaterialTheme(
             colorScheme = LightColors,
             typography = Typography,
-            content = content
+            content = content,
         )
     }
 }

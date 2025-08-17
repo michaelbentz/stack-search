@@ -50,5 +50,6 @@ fun Long.toTimeAgo(
     return "just now"
 }
 
-private fun plural(n: Long, unit: String): String =
-    "$n $unit" + if (n == 1L) "" else "s"
+private fun plural(n: Long, unit: String): String {
+    return "$n $unit" + if (n == 1L) "" else "s"
+}

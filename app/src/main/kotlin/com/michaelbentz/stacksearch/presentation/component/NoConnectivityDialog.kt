@@ -1,4 +1,4 @@
-package com.michaelbentz.stacksearch.presentation.dialog
+package com.michaelbentz.stacksearch.presentation.component
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme

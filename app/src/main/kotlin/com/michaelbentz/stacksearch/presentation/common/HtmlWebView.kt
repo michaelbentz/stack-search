@@ -1,5 +1,6 @@
-package com.michaelbentz.stacksearch.presentation.component
+package com.michaelbentz.stacksearch.presentation.common
 
+import android.graphics.Color
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -23,7 +24,7 @@ fun HtmlWebView(
                     loadsImagesAutomatically = true
                     cacheMode = WebSettings.LOAD_NO_CACHE
                 }
-                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                setBackgroundColor(Color.TRANSPARENT)
                 loadDataWithBaseURL(
                     null,
                     html,
