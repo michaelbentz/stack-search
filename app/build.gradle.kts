@@ -1,17 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.secrets)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
-}
-
-val buildProperties = gradle.rootProject.file("build.properties").inputStream().use { stream ->
-    Properties().apply { load(stream) }
 }
 
 android {
@@ -29,13 +25,12 @@ android {
         buildConfigField(
             "String",
             "STACK_EXCHANGE_BASE_URL",
-            "\"${buildProperties["STACK_EXCHANGE_BASE_URL"]}\""
+            "\"https://api.stackexchange.com/2.3/\"",
         )
-        buildConfigField(
-            "String",
-            "STACK_EXCHANGE_API_KEY",
-            "\"${buildProperties["STACK_EXCHANGE_API_KEY"]}\""
-        )
+    }
+    secrets {
+        propertiesFileName = "secrets.properties"
+        defaultPropertiesFileName = "local.defaults.properties"
     }
     buildTypes {
         release {
