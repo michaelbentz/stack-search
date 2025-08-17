@@ -99,9 +99,10 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    private suspend fun refreshAnswers(questionId: Long) = withRefresh {
-        fetchAnswersByQuestionIdUseCase(questionId).collectLatest { resource ->
-            handleResource(resource)
+    private suspend fun refreshAnswers(questionId: Long) {
+        withRefresh {
+            fetchAnswersByQuestionIdUseCase(questionId)
+                .collectLatest(::handleResource)
         }
     }
 
