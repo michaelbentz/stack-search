@@ -35,6 +35,6 @@ class AnswerRepositoryImpl @Inject constructor(
     }
 
     private companion object {
-        const val ERROR_FETCH_ANSWERS = "Failed to fetch answers"
+        const val ERROR_FETCH_ANSWERS = "Failed to load answers"
     }
 }

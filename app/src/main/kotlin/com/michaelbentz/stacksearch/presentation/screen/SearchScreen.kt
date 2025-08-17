@@ -24,15 +24,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -61,6 +57,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.michaelbentz.stacksearch.R
+import com.michaelbentz.stacksearch.presentation.component.ErrorBox
+import com.michaelbentz.stacksearch.presentation.component.LoadingBox
+import com.michaelbentz.stacksearch.presentation.component.RefreshErrorSnackbar
 import com.michaelbentz.stacksearch.presentation.component.SvgImage
 import com.michaelbentz.stacksearch.presentation.model.QuestionUiData
 import com.michaelbentz.stacksearch.presentation.state.SearchUiState
@@ -88,23 +87,6 @@ fun SearchScreen(
     LaunchedEffect(isRefreshing) {
         if (!isRefreshing) {
             showSwipeIndicator = false
-        }
-    }
-
-    val shouldShowSnackbar = hasData && !isRefreshing && !refreshError.isNullOrBlank()
-    val retryActionLabel = stringResource(R.string.action_retry)
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(shouldShowSnackbar, refreshError) {
-        if (shouldShowSnackbar) {
-            val result = snackbarHostState.showSnackbar(
-                message = refreshError ?: "",
-                actionLabel = retryActionLabel,
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                showSwipeIndicator = false
-                viewModel.retryRefresh()
-            }
         }
     }
 
@@ -156,8 +138,14 @@ fun SearchScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
+            RefreshErrorSnackbar(
+                hasData = hasData,
+                isRefreshing = isRefreshing,
+                errorMessage = refreshError,
+                onRetry = {
+                    showSwipeIndicator = false
+                    viewModel.retryRefresh()
+                },
             )
         },
     ) { innerPadding ->
@@ -203,13 +191,13 @@ fun SearchScreen(
                 }
             ) {
                 when (val state = uiState) {
-                    is SearchUiState.Loading -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            contentAlignment = Alignment.Center,
+                    is SearchUiState.Loading -> LoadingBox()
+                    is SearchUiState.Error -> {
+                        ErrorBox(
+                            message = state.message,
                         ) {
-                            CircularProgressIndicator()
+                            showSwipeIndicator = false
+                            viewModel.retryRefresh()
                         }
                     }
 
@@ -257,35 +245,6 @@ fun SearchScreen(
                                         )
                                         HorizontalDivider()
                                     }
-                                }
-                            }
-                        }
-                    }
-
-                    is SearchUiState.Error -> {
-                        Box(
-                            modifier = modifier
-                                .fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Text(
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.error,
-                                    text = state.message,
-                                )
-                                Spacer(Modifier.height(dimens.spacingMedium))
-                                FilledTonalButton(
-                                    onClick = {
-                                        showSwipeIndicator = false
-                                        viewModel.retryRefresh()
-                                    }
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.action_retry),
-                                    )
                                 }
                             }
                         }
@@ -418,17 +377,17 @@ private fun QuestionRow(
                 .width(dimens.spacing5XLarge),
             horizontalAlignment = Alignment.Start,
         ) {
-            LabeledValueItem(
+            StatValue(
                 value = question.answers,
                 label = stringResource(R.string.label_answers),
             )
             Spacer(Modifier.height(dimens.spacingSmall))
-            LabeledValueItem(
+            StatValue(
                 value = question.votes,
                 label = stringResource(R.string.label_votes),
             )
             Spacer(Modifier.height(dimens.spacingSmall))
-            LabeledValueItem(
+            StatValue(
                 value = question.views,
                 label = stringResource(R.string.label_views),
             )
@@ -444,7 +403,7 @@ private fun QuestionRow(
 }
 
 @Composable
-fun AskedByText(
+private fun AskedByText(
     askedDate: String,
     owner: String,
     modifier: Modifier = Modifier,
@@ -481,7 +440,7 @@ fun AskedByText(
 }
 
 @Composable
-private fun LabeledValueItem(
+private fun StatValue(
     value: Int,
     label: String,
     modifier: Modifier = Modifier,
