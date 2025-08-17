@@ -1,0 +1,601 @@
+package com.michaelbentz.stacksearch.presentation.screen
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import com.michaelbentz.stacksearch.R
+import com.michaelbentz.stacksearch.presentation.common.HtmlWebView
+import com.michaelbentz.stacksearch.presentation.component.ErrorBox
+import com.michaelbentz.stacksearch.presentation.component.LoadingBox
+import com.michaelbentz.stacksearch.presentation.component.RefreshErrorSnackbar
+import com.michaelbentz.stacksearch.presentation.model.AnswerSortOrder
+import com.michaelbentz.stacksearch.presentation.model.AnswerUiData
+import com.michaelbentz.stacksearch.presentation.model.DetailUiData
+import com.michaelbentz.stacksearch.presentation.state.DetailUiState
+import com.michaelbentz.stacksearch.presentation.theme.LocalDimens
+import com.michaelbentz.stacksearch.presentation.viewmodel.DetailViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DetailScreen(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    viewModel: DetailViewModel = hiltViewModel(),
+) {
+    val dimens = LocalDimens.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
+    val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
+
+    val hasData = uiState is DetailUiState.Data
+    val dataState = uiState as? DetailUiState.Data
+    val isRefreshing = dataState?.isRefreshing == true
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            Column {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back),
+                            )
+                        }
+                    },
+                    title = {
+                        Text(
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            text = stringResource(R.string.detail_title),
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                        )
+                    }
+                )
+                HorizontalDivider()
+            }
+        },
+        snackbarHost = {
+            RefreshErrorSnackbar(
+                hasData = hasData,
+                isRefreshing = isRefreshing,
+                errorMessage = refreshError,
+                onRetry = {
+                    viewModel.retryRefresh()
+                },
+            )
+        },
+    ) { innerPadding ->
+        when (val state = uiState) {
+            is DetailUiState.Loading -> LoadingBox()
+            is DetailUiState.Error -> {
+                ErrorBox(
+                    message = state.message,
+                )
+            }
+
+            is DetailUiState.Data -> {
+                with(state.data) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                    ) {
+                        item {
+                            QuestionHeader(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = dimens.spacingSmall)
+                                    .background(MaterialTheme.colorScheme.surface),
+                                data = this@with,
+                            )
+                        }
+                        item {
+                            AnswersHeader(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = dimens.spacingMedium,
+                                        vertical = dimens.spacingSmall,
+                                    ),
+                                total = answers.size,
+                                onSelect = viewModel::setSortOrder,
+                                selected = sortOrder,
+                            )
+                            HorizontalDivider()
+                        }
+                        when {
+                            isRefreshing -> {
+                                item {
+                                    Spacer(Modifier.height(dimens.spacingMedium))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = dimens.spacingLarge),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+
+                            answers.isNotEmpty() -> {
+                                items(
+                                    key = {
+                                        it.id
+                                    },
+                                    items = answers,
+                                ) { answer ->
+                                    AnswerItem(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(
+                                                horizontal = dimens.spacingMedium,
+                                                vertical = dimens.spacingSmall,
+                                            ),
+                                        answer = answer,
+                                    )
+                                    HorizontalDivider()
+                                }
+                                item {
+                                    Spacer(Modifier.height(dimens.spacingMedium))
+                                }
+                            }
+
+                            else -> {
+                                item {
+                                    Spacer(Modifier.height(dimens.spacingSmall))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuestionHeader(
+    data: DetailUiData,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalDimens.current
+    with(data) {
+        val horizontalPadding = dimens.spacingMedium
+        Column(
+            modifier = modifier,
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+                style = MaterialTheme.typography.titleLarge,
+                text = title,
+            )
+            Spacer(Modifier.height(dimens.spacingSmall))
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = horizontalPadding),
+                horizontalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
+            ) {
+                LabeledValue(
+                    label = stringResource(R.string.label_asked),
+                    value = askedDate,
+                )
+                LabeledValue(
+                    label = stringResource(R.string.label_modified),
+                    value = modifiedDate,
+                )
+                LabeledValue(
+                    label = stringResource(R.string.label_viewed),
+                    value = views,
+                )
+            }
+            Spacer(Modifier.height(dimens.spacingSmall))
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+            )
+            Spacer(Modifier.height(dimens.spacingTiny))
+            HtmlWebView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimens.spacingSmall),
+                html = body,
+            )
+            Spacer(Modifier.height(dimens.spacingSmall))
+            if (tags.isNotEmpty()) {
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPadding),
+                    horizontalArrangement = Arrangement.spacedBy(dimens.spacingSmall),
+                    verticalArrangement = Arrangement.spacedBy(dimens.spacingTiny),
+                ) {
+                    tags.forEach { tag ->
+                        TagItem(tag)
+                    }
+                }
+                Spacer(Modifier.height(dimens.spacingSmall))
+            }
+            LabeledValue(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+                label = stringResource(R.string.meta_asked),
+                value = askedExact,
+            )
+            Spacer(Modifier.height(dimens.spacingTiny))
+            AuthorRow(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+                reputation = authorReputation,
+                name = authorName,
+                avatarUrl = authorAvatarUrl,
+            )
+            Spacer(Modifier.height(dimens.spacingSmall))
+        }
+    }
+}
+
+@Composable
+private fun TagItem(
+    text: String,
+) {
+    val dimens = LocalDimens.current
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+        ),
+        elevation = CardDefaults.cardElevation(dimens.zero),
+        shape = RoundedCornerShape(dimens.spacingSmall),
+        border = null,
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = dimens.spacingMedium, vertical = dimens.spacingSmall),
+            style = MaterialTheme.typography.labelLarge,
+            text = text,
+        )
+    }
+}
+
+@Composable
+private fun AnswersHeader(
+    total: Int,
+    selected: AnswerSortOrder,
+    onSelect: (AnswerSortOrder) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalDimens.current
+    Row(
+        modifier = modifier
+            .padding(vertical = dimens.spacingSmall),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.answers_title, total),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(Modifier.weight(1f))
+        val labels = listOf(
+            stringResource(R.string.sort_active),
+            stringResource(R.string.sort_oldest),
+            stringResource(R.string.sort_votes),
+        )
+        SegmentedTabs(
+            labels = labels,
+            selectedIndex = when (selected) {
+                AnswerSortOrder.Active -> 0
+                AnswerSortOrder.Oldest -> 1
+                AnswerSortOrder.Votes -> 2
+            },
+            onSelect = { index ->
+                onSelect(
+                    when (index) {
+                        0 -> AnswerSortOrder.Active
+                        1 -> AnswerSortOrder.Oldest
+                        else -> AnswerSortOrder.Votes
+                    }
+                )
+            },
+            enabled = total > 0,
+        )
+    }
+}
+
+@Composable
+private fun SegmentedTabs(
+    labels: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = RectangleShape,
+) {
+    val dimens = LocalDimens.current
+    val outline = MaterialTheme.colorScheme.outline
+    val activeBackground = MaterialTheme.colorScheme.surfaceVariant
+    val inactiveText = MaterialTheme.colorScheme.onSurfaceVariant
+    val activeText = MaterialTheme.colorScheme.onSurface
+
+    val disabledAlpha = 0.38f
+    val borderColor = if (enabled) {
+        outline
+    } else {
+        outline.copy(alpha = disabledAlpha)
+    }
+    val textColorInactive = if (enabled) {
+        inactiveText
+    } else {
+        inactiveText.copy(alpha = disabledAlpha)
+    }
+    Surface(
+        modifier = modifier
+            .then(
+                if (!enabled) {
+                    Modifier.semantics {
+                        disabled()
+                    }
+                } else {
+                    Modifier
+                },
+            ),
+        border = BorderStroke(dimens.strokeHairline, borderColor),
+        color = Color.Transparent,
+        tonalElevation = dimens.zero,
+        shape = shape,
+    ) {
+        Row(
+            Modifier
+                .height(dimens.spacingXXLarge)
+                .clip(shape),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            labels.forEachIndexed { index, label ->
+                val selected = index == selectedIndex
+                val backgroundColor = when {
+                    !enabled -> Color.Transparent
+                    selected -> activeBackground
+                    else -> Color.Transparent
+                }
+                val labelColor = when {
+                    !enabled -> textColorInactive
+                    selected -> activeText
+                    else -> inactiveText
+                }
+                val segmentModifier = Modifier
+                    .fillMaxHeight()
+                    .background(backgroundColor)
+                    .padding(dimens.spacingSmall)
+
+                val clickableModifier = if (enabled) {
+                    Modifier
+                        .clickable(role = Role.Tab) {
+                            onSelect(index)
+                        }
+                } else {
+                    Modifier
+                }
+                Box(
+                    modifier = segmentModifier
+                        .then(clickableModifier),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (enabled && selected) FontWeight.SemiBold else FontWeight.Normal,
+                        color = labelColor,
+                    )
+                }
+                if (index != labels.lastIndex) {
+                    Box(
+                        Modifier
+                            .padding(vertical = dimens.strokeHairline)
+                            .fillMaxHeight()
+                            .width(dimens.strokeHairline)
+                            .background(borderColor),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnswerItem(
+    answer: AnswerUiData,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalDimens.current
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.Top,
+    ) {
+        Column(
+            modifier = Modifier
+                .width(dimens.spacing2XLarge),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(dimens.spacingMedium))
+            Text(
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                text = answer.score,
+            )
+            Text(
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                text = answer.scoreText,
+            )
+            if (answer.isAccepted) {
+                Spacer(Modifier.height(dimens.spacingSmall))
+                Image(
+                    modifier = Modifier
+                        .size(dimens.imageLarge),
+                    painter = painterResource(R.drawable.ic_check),
+                    contentDescription = stringResource(R.string.content_description_check),
+                )
+            }
+        }
+        Spacer(Modifier.width(dimens.spacingSmall))
+        val horizontalPadding = dimens.spacingSmall
+        Column(
+            modifier = Modifier
+                .weight(1f),
+        ) {
+            HtmlWebView(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                html = answer.body,
+            )
+            Spacer(Modifier.height(dimens.spacingTiny))
+            LabeledValue(
+                modifier = Modifier.padding(horizontal = horizontalPadding),
+                label = stringResource(R.string.meta_answered),
+                value = answer.created,
+            )
+            Spacer(Modifier.height(dimens.spacingTiny))
+            AuthorRow(
+                modifier = Modifier
+                    .padding(horizontal = horizontalPadding),
+                reputation = answer.reputation,
+                avatarUrl = answer.avatarUrl,
+                name = answer.authorName,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LabeledValue(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    boldValue: Boolean = true,
+) {
+    Text(
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyMedium,
+        text = buildAnnotatedString {
+            append("$label ")
+            withStyle(
+                if (boldValue) {
+                    SpanStyle(fontWeight = FontWeight.SemiBold)
+                } else {
+                    SpanStyle(fontWeight = FontWeight.Normal)
+                }
+            ) {
+                append(value)
+            }
+        },
+    )
+}
+
+@Composable
+private fun AuthorRow(
+    name: String,
+    reputation: String,
+    avatarUrl: String?,
+    modifier: Modifier = Modifier,
+) {
+    val dimens = LocalDimens.current
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (!avatarUrl.isNullOrBlank()) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(dimens.image)
+                    .clip(CircleShape),
+                model = avatarUrl,
+                contentDescription = null,
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(dimens.image)
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+            )
+        }
+        Spacer(Modifier.width(dimens.spacingSmall))
+        Column {
+            Text(
+                style = MaterialTheme.typography.bodyMedium,
+                text = name,
+            )
+            Text(
+                style = MaterialTheme.typography.bodySmall,
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                        append(reputation)
+                    }
+                },
+            )
+        }
+    }
+}

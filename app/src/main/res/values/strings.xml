@@ -1,3 +1,31 @@
 <resources>
+    <string name="no_network_title">You\'re offline</string>
+    <string name="no_network_message">Check your internet connection and try again.</string>
+    <string name="no_network_confirm">OK</string>
+    <string name="empty_questions">No questions to show yet</string>
+    <string name="empty_search_results">No results for “%1$s”</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_search">Search</string>
+    <string name="answers_title">%1$d Answers</string>
     <string name="app_name">StackSearch</string>
+    <string name="content_description_arrow">Open</string>
+    <string name="content_description_back">Back</string>
+    <string name="content_description_check">Accepted</string>
+    <string name="content_description_logo">Logo</string>
+    <string name="content_description_menu">Menu</string>
+    <string name="detail_title">More Info</string>
+    <string name="label_modified">Modified</string>
+    <string name="label_answers">answers</string>
+    <string name="label_asked">Asked</string>
+    <string name="label_viewed">Viewed</string>
+    <string name="label_views">views</string>
+    <string name="label_votes">votes</string>
+    <string name="meta_answered">Answered</string>
+    <string name="meta_asked">Asked</string>
+    <string name="question_asked_by">asked %1$s by %2$s</string>
+    <string name="question_title">Q: %1$s</string>
+    <string name="search_placeholder">Search…</string>
+    <string name="sort_active">Active</string>
+    <string name="sort_oldest">Oldest</string>
+    <string name="sort_votes">Votes</string>
 </resources>
